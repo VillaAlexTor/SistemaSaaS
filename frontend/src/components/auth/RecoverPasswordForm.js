@@ -20,23 +20,24 @@ function RecoverPasswordForm({ cambiarVista }) {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        backgroundColor: '#e8f5e9'
+        backgroundColor: '#1a1a1a'
       }}>
         <div style={{ 
-          backgroundColor: 'white', 
+          backgroundColor: '#2d2d2d', 
           padding: '40px', 
           borderRadius: '10px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          boxShadow: '0 4px 20px rgba(255,152,0,0.3)',
           width: '400px',
-          textAlign: 'center'
+          textAlign: 'center',
+          border: '1px solid #3d3d3d'
         }}>
           <div style={{ fontSize: '60px', marginBottom: '20px' }}>
             ✅
           </div>
-          <h2 style={{ color: '#2e7d32', marginBottom: '15px' }}>
+          <h2 style={{ color: '#ff9800', marginBottom: '15px' }}>
             Correo Enviado
           </h2>
-          <p style={{ color: '#666', marginBottom: '25px' }}>
+          <p style={{ color: '#aaa', marginBottom: '25px' }}>
             Hemos enviado un enlace de recuperación a tu correo electrónico. 
             Por favor revisa tu bandeja de entrada.
           </p>
@@ -45,12 +46,13 @@ function RecoverPasswordForm({ cambiarVista }) {
             style={{
               width: '100%',
               padding: '12px',
-              backgroundColor: '#4caf50',
-              color: 'white',
+              backgroundColor: '#ff9800',
+              color: '#000',
               border: 'none',
               borderRadius: '5px',
               cursor: 'pointer',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              boxShadow: '0 4px 15px rgba(255,152,0,0.4)'
             }}
           >
             Volver al Login
@@ -67,25 +69,26 @@ function RecoverPasswordForm({ cambiarVista }) {
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
-      backgroundColor: '#e8f5e9'
+      backgroundColor: '#1a1a1a'
     }}>
       <div style={{ 
-        backgroundColor: 'white', 
+        backgroundColor: '#2d2d2d', 
         padding: '40px', 
         borderRadius: '10px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        width: '400px'
+        boxShadow: '0 4px 20px rgba(255,152,0,0.3)',
+        width: '400px',
+        border: '1px solid #3d3d3d'
       }}>
         {/* Icono y título */}
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <div style={{ fontSize: '60px', marginBottom: '15px' }}>
             🔑
           </div>
-          <h1 style={{ color: '#2e7d32', marginBottom: '10px' }}>
+          <h1 style={{ color: '#ff9800', marginBottom: '10px' }}>
             Recuperar Contraseña
           </h1>
-          <p style={{ color: '#666', fontSize: '14px' }}>
-            Ingresa tu correo y te enviaremos un enlace
+          <p style={{ color: '#aaa', fontSize: '14px' }}>
+            Ingresa tu correo para recibir un enlace de recuperación
           </p>
         </div>
 
@@ -95,7 +98,7 @@ function RecoverPasswordForm({ cambiarVista }) {
             <label style={{ 
               display: 'block', 
               marginBottom: '5px', 
-              color: '#333', 
+              color: '#fff', 
               fontWeight: 'bold' 
             }}>
               Correo Electrónico
@@ -109,9 +112,11 @@ function RecoverPasswordForm({ cambiarVista }) {
               style={{
                 width: '100%',
                 padding: '10px',
-                border: '2px solid #ddd',
+                border: '2px solid #3d3d3d',
                 borderRadius: '5px',
-                fontSize: '14px'
+                fontSize: '14px',
+                backgroundColor: '#1a1a1a',
+                color: '#fff'
               }}
             />
           </div>
@@ -121,17 +126,18 @@ function RecoverPasswordForm({ cambiarVista }) {
             style={{
               width: '100%',
               padding: '12px',
-              backgroundColor: '#4caf50',
-              color: 'white',
+              backgroundColor: '#ff9800',
+              color: '#000',
               border: 'none',
               borderRadius: '5px',
               fontSize: '16px',
               fontWeight: 'bold',
               cursor: 'pointer',
-              marginBottom: '15px'
+              marginBottom: '15px',
+              boxShadow: '0 4px 15px rgba(255,152,0,0.4)'
             }}
           >
-            Enviar Enlace
+            Enviar Enlace de Recuperación
           </button>
 
           <button
@@ -141,8 +147,8 @@ function RecoverPasswordForm({ cambiarVista }) {
               width: '100%',
               padding: '12px',
               backgroundColor: 'transparent',
-              color: '#4caf50',
-              border: '2px solid #4caf50',
+              color: '#ff9800',
+              border: '2px solid #ff9800',
               borderRadius: '5px',
               fontSize: '16px',
               fontWeight: 'bold',

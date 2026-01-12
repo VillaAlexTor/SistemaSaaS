@@ -355,9 +355,8 @@ function UserProfile({ usuario, cerrarPerfil, actualizarPerfil }) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
+  </div>
+</div>
+);
 }
-
 export default UserProfile;
