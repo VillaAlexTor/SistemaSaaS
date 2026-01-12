@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos básicos con la nueva paleta */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+/* Estilos para inputs */
+input, select {
+  font-size: 14px;
+}
+
+/* Botones básicos */
+button {
+  cursor: pointer;
+}
+
+/* Tabla simple */
+table {
+  border-collapse: collapse;
+}
+
+/* Animaciones suaves */
+* {
+  transition: all 0.3s ease;
+}
