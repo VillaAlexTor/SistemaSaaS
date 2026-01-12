@@ -37,38 +37,37 @@ function RegisterForm({ cambiarVista }) {
   return (
     <div style={{ 
       minHeight: '100vh', 
-      backgroundColor: '#0d0d0d',
-      backgroundImage: 'linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%)',
+      backgroundColor: '#1a1a1a',
       padding: '20px'
     }}>
       <div style={{ 
         maxWidth: '800px', 
         margin: '0 auto',
-        backgroundColor: '#1e1e1e',
+        backgroundColor: '#2d2d2d',
         padding: '30px',
-        borderRadius: '15px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-        border: '1px solid #333'
+        borderRadius: '10px',
+        boxShadow: '0 4px 20px rgba(255,152,0,0.3)',
+        border: '1px solid #3d3d3d'
       }}>
         {/* Encabezado */}
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <h1 style={{ color: '#ff6b35', marginBottom: '10px' }}>
+          <h1 style={{ color: '#ff9800', marginBottom: '10px' }}>
             📝 Registro de Microempresa
           </h1>
-          <p style={{ color: '#888' }}>Completa todos los datos para registrarte</p>
+          <p style={{ color: '#aaa' }}>Completa todos los datos para registrarte</p>
         </div>
 
         {/* Formulario */}
         <form onSubmit={enviar}>
           {/* Datos de la Empresa */}
           <div style={{ marginBottom: '25px' }}>
-            <h3 style={{ color: '#ff6b35', marginBottom: '15px', borderBottom: '2px solid #ff6b35', paddingBottom: '5px' }}>
+            <h3 style={{ color: '#ff9800', marginBottom: '15px', borderBottom: '2px solid #ff9800', paddingBottom: '5px' }}>
               Datos de la Empresa
             </h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#e0e0e0' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#fff' }}>
                   Nombre de la Empresa *
                 </label>
                 <input
@@ -77,19 +76,12 @@ function RegisterForm({ cambiarVista }) {
                   onChange={(e) => cambiarDato('nombreEmpresa', e.target.value)}
                   placeholder="Ej: Tienda Don Juan"
                   required
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    border: '2px solid #333', 
-                    borderRadius: '8px',
-                    backgroundColor: '#2a2a2a',
-                    color: '#e0e0e0'
-                  }}
+                  style={{ width: '100%', padding: '8px', border: '2px solid #444', borderRadius: '5px', backgroundColor: '#1a1a1a', color: '#fff' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#e0e0e0' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#fff' }}>
                   NIT/RUC *
                 </label>
                 <input
@@ -98,19 +90,12 @@ function RegisterForm({ cambiarVista }) {
                   onChange={(e) => cambiarDato('nit', e.target.value)}
                   placeholder="1234567890"
                   required
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    border: '2px solid #333', 
-                    borderRadius: '8px',
-                    backgroundColor: '#2a2a2a',
-                    color: '#e0e0e0'
-                  }}
+                  style={{ width: '100%', padding: '8px', border: '2px solid #444', borderRadius: '5px', backgroundColor: '#1a1a1a', color: '#fff' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#e0e0e0' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#fff' }}>
                   Teléfono *
                 </label>
                 <input
@@ -119,19 +104,12 @@ function RegisterForm({ cambiarVista }) {
                   onChange={(e) => cambiarDato('telefono', e.target.value)}
                   placeholder="+591 12345678"
                   required
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    border: '2px solid #333', 
-                    borderRadius: '8px',
-                    backgroundColor: '#2a2a2a',
-                    color: '#e0e0e0'
-                  }}
+                  style={{ width: '100%', padding: '8px', border: '2px solid #444', borderRadius: '5px', backgroundColor: '#1a1a1a', color: '#fff' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#e0e0e0' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#fff' }}>
                   Email *
                 </label>
                 <input
@@ -140,20 +118,13 @@ function RegisterForm({ cambiarVista }) {
                   onChange={(e) => cambiarDato('email', e.target.value)}
                   placeholder="correo@empresa.com"
                   required
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    border: '2px solid #333', 
-                    borderRadius: '8px',
-                    backgroundColor: '#2a2a2a',
-                    color: '#e0e0e0'
-                  }}
+                  style={{ width: '100%', padding: '8px', border: '2px solid #444', borderRadius: '5px', backgroundColor: '#1a1a1a', color: '#fff' }}
                 />
               </div>
             </div>
 
             <div style={{ marginTop: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#e0e0e0' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#fff' }}>
                 Dirección *
               </label>
               <input
@@ -162,26 +133,19 @@ function RegisterForm({ cambiarVista }) {
                 onChange={(e) => cambiarDato('direccion', e.target.value)}
                 placeholder="Ej: Av. Principal #123"
                 required
-                style={{ 
-                  width: '100%', 
-                  padding: '10px', 
-                  border: '2px solid #333', 
-                  borderRadius: '8px',
-                  backgroundColor: '#2a2a2a',
-                  color: '#e0e0e0'
-                }}
+                style={{ width: '100%', padding: '8px', border: '2px solid #444', borderRadius: '5px', backgroundColor: '#1a1a1a', color: '#fff' }}
               />
             </div>
           </div>
 
           {/* Datos del Administrador */}
           <div style={{ marginBottom: '25px' }}>
-            <h3 style={{ color: '#ff6b35', marginBottom: '15px', borderBottom: '2px solid #ff6b35', paddingBottom: '5px' }}>
+            <h3 style={{ color: '#ff9800', marginBottom: '15px', borderBottom: '2px solid #ff9800', paddingBottom: '5px' }}>
               Datos del Administrador
             </h3>
             
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#e0e0e0' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#fff' }}>
                 Nombre Completo *
               </label>
               <input
@@ -190,21 +154,13 @@ function RegisterForm({ cambiarVista }) {
                 onChange={(e) => cambiarDato('nombreAdmin', e.target.value)}
                 placeholder="Juan Pérez"
                 required
-                style={{ 
-                  width: '100%', 
-                  padding: '10px', 
-                  border: '2px solid #333', 
-                  borderRadius: '8px', 
-                  marginBottom: '15px',
-                  backgroundColor: '#2a2a2a',
-                  color: '#e0e0e0'
-                }}
+                style={{ width: '100%', padding: '8px', border: '2px solid #444', borderRadius: '5px', marginBottom: '15px', backgroundColor: '#1a1a1a', color: '#fff' }}
               />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#e0e0e0' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#fff' }}>
                   Contraseña *
                 </label>
                 <input
@@ -214,19 +170,12 @@ function RegisterForm({ cambiarVista }) {
                   placeholder="Mínimo 6 caracteres"
                   required
                   minLength="6"
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    border: '2px solid #333', 
-                    borderRadius: '8px',
-                    backgroundColor: '#2a2a2a',
-                    color: '#e0e0e0'
-                  }}
+                  style={{ width: '100%', padding: '8px', border: '2px solid #444', borderRadius: '5px', backgroundColor: '#1a1a1a', color: '#fff' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#e0e0e0' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#fff' }}>
                   Confirmar Contraseña *
                 </label>
                 <input
@@ -235,14 +184,7 @@ function RegisterForm({ cambiarVista }) {
                   onChange={(e) => cambiarDato('password2', e.target.value)}
                   placeholder="Repetir contraseña"
                   required
-                  style={{ 
-                    width: '100%', 
-                    padding: '10px', 
-                    border: '2px solid #333', 
-                    borderRadius: '8px',
-                    backgroundColor: '#2a2a2a',
-                    color: '#e0e0e0'
-                  }}
+                  style={{ width: '100%', padding: '8px', border: '2px solid #444', borderRadius: '5px', backgroundColor: '#1a1a1a', color: '#fff' }}
                 />
               </div>
             </div>
@@ -250,7 +192,7 @@ function RegisterForm({ cambiarVista }) {
 
           {/* Plan de Suscripción */}
           <div style={{ marginBottom: '25px' }}>
-            <h3 style={{ color: '#ff6b35', marginBottom: '15px', borderBottom: '2px solid #ff6b35', paddingBottom: '5px' }}>
+            <h3 style={{ color: '#ff9800', marginBottom: '15px', borderBottom: '2px solid #ff9800', paddingBottom: '5px' }}>
               Selecciona tu Plan
             </h3>
             
@@ -259,19 +201,18 @@ function RegisterForm({ cambiarVista }) {
               <div
                 onClick={() => cambiarDato('plan', 'basico')}
                 style={{
-                  border: datos.plan === 'basico' ? '3px solid #ff6b35' : '2px solid #333',
+                  border: datos.plan === 'basico' ? '3px solid #ff9800' : '2px solid #444',
                   padding: '15px',
-                  borderRadius: '10px',
+                  borderRadius: '8px',
                   cursor: 'pointer',
-                  backgroundColor: datos.plan === 'basico' ? '#2a1f1a' : '#1e1e1e',
-                  boxShadow: datos.plan === 'basico' ? '0 4px 15px rgba(255, 107, 53, 0.3)' : 'none'
+                  backgroundColor: datos.plan === 'basico' ? '#2d2410' : '#1a1a1a'
                 }}
               >
-                <h4 style={{ margin: '0 0 10px 0', color: '#ff6b35' }}>Plan Básico</h4>
-                <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#888' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: '#ff9800' }}>Plan Básico</h4>
+                <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#aaa' }}>
                   Perfecto para comenzar
                 </p>
-                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff6b35', margin: 0 }}>
+                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff9800', margin: 0 }}>
                   GRATIS
                 </p>
               </div>
@@ -280,19 +221,18 @@ function RegisterForm({ cambiarVista }) {
               <div
                 onClick={() => cambiarDato('plan', 'premium')}
                 style={{
-                  border: datos.plan === 'premium' ? '3px solid #ffd700' : '2px solid #333',
+                  border: datos.plan === 'premium' ? '3px solid #ffb74d' : '2px solid #444',
                   padding: '15px',
-                  borderRadius: '10px',
+                  borderRadius: '8px',
                   cursor: 'pointer',
-                  backgroundColor: datos.plan === 'premium' ? '#2a2416' : '#1e1e1e',
-                  boxShadow: datos.plan === 'premium' ? '0 4px 15px rgba(255, 215, 0, 0.3)' : 'none'
+                  backgroundColor: datos.plan === 'premium' ? '#2d2410' : '#1a1a1a'
                 }}
               >
-                <h4 style={{ margin: '0 0 10px 0', color: '#ffd700' }}>Plan Premium</h4>
-                <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#888' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: '#ffb74d' }}>Plan Premium</h4>
+                <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#aaa' }}>
                   Todas las funciones
                 </p>
-                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffd700', margin: 0 }}>
+                <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffb74d', margin: 0 }}>
                   $29/mes
                 </p>
               </div>
@@ -315,10 +255,10 @@ function RegisterForm({ cambiarVista }) {
               style={{
                 flex: 1,
                 padding: '12px',
-                backgroundColor: '#333',
-                color: '#e0e0e0',
+                backgroundColor: '#444',
+                color: '#fff',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '5px',
                 cursor: 'pointer',
                 fontWeight: 'bold'
               }}
@@ -330,13 +270,13 @@ function RegisterForm({ cambiarVista }) {
               style={{
                 flex: 1,
                 padding: '12px',
-                backgroundColor: '#ff6b35',
-                color: 'white',
+                backgroundColor: '#ff9800',
+                color: '#000',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '5px',
                 cursor: 'pointer',
                 fontWeight: 'bold',
-                boxShadow: '0 4px 15px rgba(255, 107, 53, 0.3)'
+                boxShadow: '0 4px 15px rgba(255,152,0,0.4)'
               }}
             >
               Registrar Empresa
