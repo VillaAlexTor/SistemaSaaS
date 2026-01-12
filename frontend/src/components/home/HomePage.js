@@ -1,6 +1,6 @@
 import React from 'react';
 
-// Pantalla de inicio del sistema
+// Pantalla de inicio simplificada
 function HomePage({ cambiarVista }) {
   return (
     <div style={{
@@ -13,7 +13,7 @@ function HomePage({ cambiarVista }) {
       overflow: 'hidden',
       position: 'relative'
     }}>
-      {/* Decoración de fondo - círculos naranjas */}
+      {/* Decoración de fondo */}
       <div style={{
         position: 'absolute',
         top: '-100px',
@@ -44,7 +44,7 @@ function HomePage({ cambiarVista }) {
         position: 'relative',
         zIndex: 1
       }}>
-        {/* Logo/Icono principal */}
+        {/* Logo */}
         <div style={{
           fontSize: '120px',
           marginBottom: '20px',
@@ -53,7 +53,7 @@ function HomePage({ cambiarVista }) {
           🏪
         </div>
 
-        {/* Título principal */}
+        {/* Título */}
         <h1 style={{
           fontSize: '56px',
           fontWeight: 'bold',
@@ -89,7 +89,7 @@ function HomePage({ cambiarVista }) {
           tu microempresa en un solo lugar.
         </p>
 
-        {/* Características rápidas */}
+        {/* Características */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -151,7 +151,7 @@ function HomePage({ cambiarVista }) {
           </button>
 
           <button
-            onClick={() => cambiarVista('register')}
+            onClick={() => cambiarVista('catalogo')}
             style={{
               padding: '15px 40px',
               fontSize: '18px',
@@ -174,11 +174,11 @@ function HomePage({ cambiarVista }) {
               e.target.style.transform = 'translateY(0)';
             }}
           >
-            Registrarse Gratis
+            Ver Empresas
           </button>
         </div>
 
-        {/* Texto pequeño al final */}
+        {/* Texto inferior */}
         <p style={{
           marginTop: '40px',
           fontSize: '14px',
