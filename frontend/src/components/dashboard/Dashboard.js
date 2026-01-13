@@ -171,10 +171,10 @@ function Dashboard({ usuario, cerrarSesion }) {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px', color: '#fff' }}>
-                  Admin Principal
+                  {usuario?.nombre || 'Admin Principal'}
                 </p>
                 <p style={{ margin: 0, fontSize: '11px', color: '#ff9800' }}>
-                  {usuario}
+                  {usuario?.rol || 'Administrador'}
                 </p>
               </div>
             </div>
@@ -278,10 +278,10 @@ function Dashboard({ usuario, cerrarSesion }) {
               <div>
                 <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>Tu Rol</p>
                 <h2 style={{ margin: '5px 0', color: '#ff9800', fontSize: '20px', textTransform: 'capitalize' }}>
-                  {usuario === 'administrador' && '👑 '}
-                  {usuario === 'cliente' && '🏪 '}
-                  {usuario === 'usuario' && '🛒 '}
-                  {usuario}
+                  {usuario?.rol === 'superadmin' && '👑 Administrador'}
+                  {usuario?.rol === 'cliente' && '🏪 Cliente'}
+                  {usuario?.rol === 'usuario' && '🛒 Usuario'}
+                  {!usuario?.rol && '👑 Administrador'}
                 </h2>
               </div>
               <div style={{ fontSize: '40px' }}>🎭</div>

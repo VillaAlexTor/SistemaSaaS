@@ -3,19 +3,18 @@ import HomePage from './components/home/HomePage';
 import LoginUnificado from './components/auth/LoginUnificado';
 import RegisterForm from './components/auth/RegisterForm';
 import RecoverPasswordForm from './components/auth/RecoverPasswordForm';
+// CORREGIR: Todos los dashboards están en la misma carpeta
 import Dashboard from './components/dashboard/Dashboard';
+import DashboardMicroempresa from './components/dashboard/DashboardMicroempresa';
+import DashboardUsuario from './components/dashboard/DashboardUsuario';
 
-// Componente principal de la aplicación
 function App() {
-  // Estados para controlar qué vista mostrar
   const [vista, setVista] = useState('home');
   const [usuarioActual, setUsuarioActual] = useState(null);
 
-  // Función para hacer login
   const hacerLogin = (datosUsuario) => {
     setUsuarioActual(datosUsuario);
     
-    // Redirigir según el rol del usuario
     if (datosUsuario.rol === 'superadmin') {
       setVista('dashboardAdmin');
     } else if (datosUsuario.rol === 'microempresa') {
@@ -25,13 +24,11 @@ function App() {
     }
   };
 
-  // Función para cerrar sesión
   const cerrarSesion = () => {
     setUsuarioActual(null);
     setVista('home');
   };
 
-  // Mostrar la vista correspondiente
   if (vista === 'home') {
     return <HomePage cambiarVista={setVista} />;
   }
@@ -48,104 +45,19 @@ function App() {
     return <RecoverPasswordForm cambiarVista={setVista} />;
   }
 
-  // Dashboards según rol
   if (vista === 'dashboardAdmin') {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        backgroundColor: '#1a1a1a',
-        color: '#fff',
-        padding: '40px',
-        textAlign: 'center'
-      }}>
-        <h1 style={{ color: '#9c27b0' }}>👑 Dashboard Administrador</h1>
-        <p>Bienvenido {usuarioActual?.nombre}</p>
-        <p>Email: {usuarioActual?.email}</p>
-        <button
-          onClick={cerrarSesion}
-          style={{
-            marginTop: '20px',
-            padding: '10px 30px',
-            backgroundColor: '#ff9800',
-            color: '#000',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
-          Cerrar Sesión
-        </button>
-      </div>
-    );
+    return <Dashboard usuario={usuarioActual} cerrarSesion={cerrarSesion} />;
   }
 
   if (vista === 'dashboardMicroempresa') {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        backgroundColor: '#1a1a1a',
-        color: '#fff',
-        padding: '40px',
-        textAlign: 'center'
-      }}>
-        <h1 style={{ color: '#2196f3' }}>🏪 Dashboard Microempresa</h1>
-        <p>Bienvenido {usuarioActual?.nombre}</p>
-        <p>Email: {usuarioActual?.email}</p>
-        <p>Plan: {usuarioActual?.plan}</p>
-        <p>Rubro: {usuarioActual?.rubro}</p>
-        <button
-          onClick={cerrarSesion}
-          style={{
-            marginTop: '20px',
-            padding: '10px 30px',
-            backgroundColor: '#ff9800',
-            color: '#000',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
-          Cerrar Sesión
-        </button>
-      </div>
-    );
+    return <DashboardMicroempresa usuario={usuarioActual} cerrarSesion={cerrarSesion} />;
   }
 
   if (vista === 'dashboardUsuario') {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        backgroundColor: '#1a1a1a',
-        color: '#fff',
-        padding: '40px',
-        textAlign: 'center'
-      }}>
-        <h1 style={{ color: '#ff9800' }}>🛒 Dashboard Usuario</h1>
-        <p>Bienvenido {usuarioActual?.nombre}</p>
-        <p>Email: {usuarioActual?.email}</p>
-        <button
-          onClick={cerrarSesion}
-          style={{
-            marginTop: '20px',
-            padding: '10px 30px',
-            backgroundColor: '#ff9800',
-            color: '#000',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
-          Cerrar Sesión
-        </button>
-      </div>
-    );
+    return <DashboardUsuario usuario={usuarioActual} cerrarSesion={cerrarSesion} />;
   }
 
-  // Por defecto, antiguo dashboard (temporal)
-  return <Dashboard usuario={usuarioActual?.rol} cerrarSesion={cerrarSesion} />;
+  return <HomePage cambiarVista={setVista} />;
 }
 
 export default App;

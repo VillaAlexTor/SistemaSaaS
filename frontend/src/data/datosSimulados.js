@@ -1,10 +1,13 @@
 // BASE DE DATOS SIMULADA
 // Este archivo simula una base de datos mientras no tengamos backend
 
+// ============================================
+// FUNCIÓN DE HASHEO (DEBE IR AL PRINCIPIO)
+// ============================================
 // Función para simular hash de contraseñas (convertir a base64)
-const hashPassword = (password) => {
+function hashPassword(password) {
   return btoa(password); // Convierte a base64
-};
+}
 
 // ============================================
 // ADMINISTRADORES DEL SISTEMA
@@ -14,7 +17,7 @@ export const ADMINISTRADORES = [
     id: 1,
     nombre: 'Super Admin',
     email: 'admin@sistema.com',
-    password: ('admin123'),
+    password: hashPassword('admin123'),
     rol: 'superadmin',
     activo: true
   }
@@ -33,7 +36,7 @@ export const MICROEMPRESAS = [
     direccion: 'Av. 6 de Agosto #1234',
     telefono: '+591 12345678',
     email: 'juanito@tienda.com',
-    password: ('tienda123'),
+    password: hashPassword('tienda123'),
     plan: 'premium',
     activo: true,
     fechaRegistro: '2024-01-15',
@@ -48,7 +51,7 @@ export const MICROEMPRESAS = [
     direccion: 'Av. Industrial #456',
     telefono: '+591 71234567',
     email: 'ferreteria@gmail.com',
-    password: ('ferreteria123'),
+    password: hashPassword('ferreteria123'),
     plan: 'basico',
     activo: true,
     fechaRegistro: '2025-11-15',
@@ -63,7 +66,7 @@ export const MICROEMPRESAS = [
     direccion: 'Calle Comercio #789',
     telefono: '+591 76543210',
     email: 'farmacia@gmail.com',
-    password: ('farm123'),
+    password: hashPassword('farm123'),
     plan: 'premium',
     activo: true,
     fechaRegistro: '2025-12-01',
@@ -78,7 +81,7 @@ export const MICROEMPRESAS = [
     direccion: 'Av. América #345',
     telefono: '+591 77778888',
     email: 'libros@gmail.com',
-    password: ('libros123'),
+    password: hashPassword('libros123'),
     plan: 'basico',
     activo: true,
     fechaRegistro: '2025-11-05',
@@ -93,7 +96,7 @@ export const MICROEMPRESAS = [
     direccion: 'Calle Sucre #456',
     telefono: '+591 77777777',
     email: 'tecno@gmail.com',
-    password: ('tecno123'),
+    password: hashPassword('tecno123'),
     plan: 'premium',
     activo: true,
     fechaRegistro: '2025-11-20',
@@ -109,7 +112,7 @@ export const USUARIOS = [
     id: 1,
     nombre: 'Pedro Gómez',
     email: 'usuario@gmail.com',
-    password: ('user123'),
+    password: hashPassword('user123'),
     telefono: '+591 70000001',
     direccion: 'Zona Sur #123',
     fechaRegistro: '2026-01-01',
@@ -119,7 +122,7 @@ export const USUARIOS = [
     id: 2,
     nombre: 'Laura Mendoza',
     email: 'comprador@gmail.com',
-    password: ('comp123'),
+    password: hashPassword('comp123'),
     telefono: '+591 70000002',
     direccion: 'Zona Norte #456',
     fechaRegistro: '2026-01-05',
@@ -129,7 +132,7 @@ export const USUARIOS = [
     id: 3,
     nombre: 'Miguel Torres',
     email: 'cliente@gmail.com',
-    password: ('cliente123'),
+    password: hashPassword('cliente123'),
     telefono: '+591 70000003',
     direccion: 'Centro #789',
     fechaRegistro: '2026-01-10',
@@ -140,52 +143,6 @@ export const USUARIOS = [
 // ============================================
 // FUNCIONES AUXILIARES
 // ============================================
-
-// Función para validar login de administrador
-export const validarLoginAdmin = (email, password) => {
-  const admin = ADMINISTRADORES.find(a => a.email === email);
-  if (!admin) return null;
-  
-  const passwordHash = (password);
-  if (admin.password === passwordHash && admin.activo) {
-    return { ...admin, password: undefined }; // No devolver la contraseña
-  }
-  return null;
-};
-
-// Función para validar login de microempresa
-export const validarLoginMicroempresa = (email, password) => {
-  const microempresa = MICROEMPRESAS.find(m => m.email === email);
-  if (!microempresa) return null;
-  
-  const passwordHash = hashPassword(password);
-  if (microempresa.password === passwordHash && microempresa.activo) {
-    return { ...microempresa, password: undefined, rol: 'microempresa' };
-  }
-  return null;
-};
-
-// Función para validar login de usuario
-export const validarLoginUsuario = (email, password) => {
-  const usuario = USUARIOS.find(u => u.email === email);
-  if (!usuario) return null;
-  
-  const passwordHash = hashPassword(password);
-  if (usuario.password === passwordHash) {
-    return { ...usuario, password: undefined };
-  }
-  return null;
-};
-
-// Función para buscar microempresa por email
-export const buscarMicroempresaPorEmail = (email) => {
-  return MICROEMPRESAS.find(m => m.email === email);
-};
-
-// Función para buscar usuario por email
-export const buscarUsuarioPorEmail = (email) => {
-  return USUARIOS.find(u => u.email === email);
-};
 
 // Función para obtener microempresas activas
 export const obtenerMicroempresasActivas = () => {
@@ -217,8 +174,9 @@ export const registrarMicroempresa = (datos) => {
     id: nuevoId,
     ...datos,
     password: hashPassword(datos.password),
-    activo: true,
-    fechaRegistro: new Date().toISOString().split('T')[0]
+    activo: false, // Inactiva hasta que admin la apruebe
+    fechaRegistro: new Date().toISOString().split('T')[0],
+    rol: 'microempresa'
   };
   MICROEMPRESAS.push(nuevaMicroempresa);
   return nuevaMicroempresa;
@@ -247,14 +205,33 @@ export const CREDENCIALES_PRUEBA = {
     password: 'admin123',
     descripcion: 'Administrador del sistema'
   },
-  microempresa: {
-    email: 'juanito@tienda.com',
-    password: 'tienda123',
-    descripcion: 'Tienda Don Juanito (Premium)'
-  },
-  usuario: {
-    email: 'usuario@gmail.com',
-    password: 'user123',
-    descripcion: 'Usuario comprador'
-  }
+  microempresas: [
+    {
+      email: 'juanito@tienda.com',
+      password: 'tienda123',
+      descripcion: 'Tienda Don Juanito (Premium)'
+    },
+    {
+      email: 'ferreteria@gmail.com',
+      password: 'ferreteria123',
+      descripcion: 'Ferretería El Martillo (Básico)'
+    },
+    {
+      email: 'farmacia@gmail.com',
+      password: 'farm123',
+      descripcion: 'Farmacia San José (Premium)'
+    }
+  ],
+  usuarios: [
+    {
+      email: 'usuario@gmail.com',
+      password: 'user123',
+      descripcion: 'Usuario comprador'
+    },
+    {
+      email: 'comprador@gmail.com',
+      password: 'comp123',
+      descripcion: 'Usuario comprador 2'
+    }
+  ]
 };
