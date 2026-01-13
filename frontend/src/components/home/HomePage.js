@@ -249,7 +249,7 @@ function HomePage({ cambiarVista }) {
           </button>
 
           <button
-            onClick={() => cambiarVista('catalogo')}
+            onClick={() => cambiarVista('catalogoPublico')}
             style={{
               padding: '18px 50px',
               fontSize: '18px',

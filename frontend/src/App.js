@@ -3,18 +3,22 @@ import HomePage from './components/home/HomePage';
 import LoginUnificado from './components/auth/LoginUnificado';
 import RegisterForm from './components/auth/RegisterForm';
 import RecoverPasswordForm from './components/auth/RecoverPasswordForm';
-// CORREGIR: Todos los dashboards están en la misma carpeta
 import Dashboard from './components/dashboard/Dashboard';
 import DashboardMicroempresa from './components/dashboard/DashboardMicroempresa';
 import DashboardUsuario from './components/dashboard/DashboardUsuario';
+import CatalogoPublico from './components/catalogo/CatalogoPublico';
 
+// Componente principal de la aplicación
 function App() {
+  // Estados para controlar qué vista mostrar
   const [vista, setVista] = useState('home');
   const [usuarioActual, setUsuarioActual] = useState(null);
 
+  // Función para hacer login
   const hacerLogin = (datosUsuario) => {
     setUsuarioActual(datosUsuario);
     
+    // Redirigir según el rol del usuario
     if (datosUsuario.rol === 'superadmin') {
       setVista('dashboardAdmin');
     } else if (datosUsuario.rol === 'microempresa') {
@@ -24,11 +28,13 @@ function App() {
     }
   };
 
+  // Función para cerrar sesión
   const cerrarSesion = () => {
     setUsuarioActual(null);
     setVista('home');
   };
 
+  // Mostrar la vista correspondiente
   if (vista === 'home') {
     return <HomePage cambiarVista={setVista} />;
   }
@@ -45,6 +51,12 @@ function App() {
     return <RecoverPasswordForm cambiarVista={setVista} />;
   }
 
+  // Catálogo público (sin login)
+  if (vista === 'catalogoPublico') {
+    return <CatalogoPublico cambiarVista={setVista} />;
+  }
+
+  // Dashboards según rol
   if (vista === 'dashboardAdmin') {
     return <Dashboard usuario={usuarioActual} cerrarSesion={cerrarSesion} />;
   }
@@ -57,6 +69,7 @@ function App() {
     return <DashboardUsuario usuario={usuarioActual} cerrarSesion={cerrarSesion} />;
   }
 
+  // Vista por defecto
   return <HomePage cambiarVista={setVista} />;
 }
 
