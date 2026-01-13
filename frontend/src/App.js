@@ -11,15 +11,13 @@ import CatalogoPublico from './components/catalogo/CatalogoPublico';
 
 // Componente principal de la aplicación
 function App() {
-  // Estados para controlar qué vista mostrar
   const [vista, setVista] = useState('home');
   const [usuarioActual, setUsuarioActual] = useState(null);
 
-  // Función para hacer login
   const hacerLogin = (datosUsuario) => {
     setUsuarioActual(datosUsuario);
     
-    // Redirigir según el rol del usuario
+    // Redirigir segun el rol del usuario
     if (datosUsuario.rol === 'superadmin') {
       setVista('dashboardAdmin');
     } else if (datosUsuario.rol === 'microempresa') {
@@ -29,7 +27,7 @@ function App() {
     }
   };
 
-  // Función para cerrar sesión
+  // cerrar sesion
   const cerrarSesion = () => {
     setUsuarioActual(null);
     setVista('home');
