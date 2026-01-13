@@ -14,7 +14,7 @@ export const ADMINISTRADORES = [
     id: 1,
     nombre: 'Super Admin',
     email: 'admin@sistema.com',
-    password: hashPassword('admin123'),
+    password: ('admin123'),
     rol: 'superadmin',
     activo: true
   }
@@ -33,7 +33,7 @@ export const MICROEMPRESAS = [
     direccion: 'Av. 6 de Agosto #1234',
     telefono: '+591 12345678',
     email: 'juanito@tienda.com',
-    password: hashPassword('tienda123'),
+    password: ('tienda123'),
     plan: 'premium',
     activo: true,
     fechaRegistro: '2024-01-15',
@@ -48,7 +48,7 @@ export const MICROEMPRESAS = [
     direccion: 'Av. Industrial #456',
     telefono: '+591 71234567',
     email: 'ferreteria@gmail.com',
-    password: hashPassword('ferreteria123'),
+    password: ('ferreteria123'),
     plan: 'basico',
     activo: true,
     fechaRegistro: '2025-11-15',
@@ -63,7 +63,7 @@ export const MICROEMPRESAS = [
     direccion: 'Calle Comercio #789',
     telefono: '+591 76543210',
     email: 'farmacia@gmail.com',
-    password: hashPassword('farm123'),
+    password: ('farm123'),
     plan: 'premium',
     activo: true,
     fechaRegistro: '2025-12-01',
@@ -78,7 +78,7 @@ export const MICROEMPRESAS = [
     direccion: 'Av. América #345',
     telefono: '+591 77778888',
     email: 'libros@gmail.com',
-    password: hashPassword('libros123'),
+    password: ('libros123'),
     plan: 'basico',
     activo: true,
     fechaRegistro: '2025-11-05',
@@ -93,7 +93,7 @@ export const MICROEMPRESAS = [
     direccion: 'Calle Sucre #456',
     telefono: '+591 77777777',
     email: 'tecno@gmail.com',
-    password: hashPassword('tecno123'),
+    password: ('tecno123'),
     plan: 'premium',
     activo: true,
     fechaRegistro: '2025-11-20',
@@ -109,7 +109,7 @@ export const USUARIOS = [
     id: 1,
     nombre: 'Pedro Gómez',
     email: 'usuario@gmail.com',
-    password: hashPassword('user123'),
+    password: ('user123'),
     telefono: '+591 70000001',
     direccion: 'Zona Sur #123',
     fechaRegistro: '2026-01-01',
@@ -119,7 +119,7 @@ export const USUARIOS = [
     id: 2,
     nombre: 'Laura Mendoza',
     email: 'comprador@gmail.com',
-    password: hashPassword('comp123'),
+    password: ('comp123'),
     telefono: '+591 70000002',
     direccion: 'Zona Norte #456',
     fechaRegistro: '2026-01-05',
@@ -129,7 +129,7 @@ export const USUARIOS = [
     id: 3,
     nombre: 'Miguel Torres',
     email: 'cliente@gmail.com',
-    password: hashPassword('cliente123'),
+    password: ('cliente123'),
     telefono: '+591 70000003',
     direccion: 'Centro #789',
     fechaRegistro: '2026-01-10',
@@ -146,7 +146,7 @@ export const validarLoginAdmin = (email, password) => {
   const admin = ADMINISTRADORES.find(a => a.email === email);
   if (!admin) return null;
   
-  const passwordHash = hashPassword(password);
+  const passwordHash = (password);
   if (admin.password === passwordHash && admin.activo) {
     return { ...admin, password: undefined }; // No devolver la contraseña
   }
