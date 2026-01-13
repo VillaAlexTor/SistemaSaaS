@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-
+import { api } from '../../services/api';
 // Formulario de Registro para Usuarios Normales (Compradores)
 function RegisterUsuarioForm({ cambiarVista }) {
   const [verPassword, setVerPassword] = useState(false);
   const [verPassword2, setVerPassword2] = useState(false);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
 
   // Datos del formulario
   const [datos, setDatos] = useState({
@@ -20,25 +22,58 @@ function RegisterUsuarioForm({ cambiarVista }) {
   const cambiarDato = (campo, valor) => {
     setDatos({ ...datos, [campo]: valor });
   };
-
+  {/* Mensaje de error */}
+  {error && (
+    <div style={{
+      backgroundColor: '#4d1f1f',
+      color: '#ff6b6b',
+      padding: '12px',
+      borderRadius: '8px',
+      marginBottom: '20px',
+      border: '1px solid #ff6b6b',
+      fontSize: '14px'
+    }}>
+      ⚠️ {error}
+    </div>
+  )}
   // Enviar formulario
-  const enviar = (e) => {
+  const enviar = async (e) => {
     e.preventDefault();
+    setError('');
     
     // Validar que las contraseñas coincidan
     if (datos.password !== datos.password2) {
-      alert('Las contraseñas no coinciden');
+      setError('Las contraseñas no coinciden');
       return;
     }
 
     // Validar términos y condiciones
     if (!datos.aceptaTerminos) {
-      alert('Debes aceptar los términos y condiciones');
+      setError('Debes aceptar los términos y condiciones');
       return;
     }
 
-    alert(`¡Registro exitoso! Bienvenido ${datos.nombre} ${datos.apellido}`);
-    cambiarVista('login');
+    setCargando(true);
+
+    // Preparar datos para enviar (sin password2 y aceptaTerminos)
+    const datosEnviar = {
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      email: datos.email,
+      telefono: datos.telefono,
+      password: datos.password
+    };
+
+    const resultado = await api.registerUsuario(datosEnviar);
+
+    if (resultado.success) {
+      alert(`¡Registro exitoso! Bienvenido ${datos.nombre} ${datos.apellido}`);
+      cambiarVista('login');
+    } else {
+      setError(resultado.message || 'Error al registrar usuario');
+    }
+
+    setCargando(false);
   };
 
   return (

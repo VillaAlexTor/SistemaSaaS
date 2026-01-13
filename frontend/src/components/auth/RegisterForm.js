@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-
+import { api } from '../../services/api';
 // Formulario de Registro de Microempresa
 function RegisterForm({ cambiarVista }) {
   // Datos del formulario
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
   const [datos, setDatos] = useState({
     nombreEmpresa: '',
     nit: '',
@@ -21,19 +23,57 @@ function RegisterForm({ cambiarVista }) {
   };
 
   // Enviar formulario
-  const enviar = (e) => {
+  const enviar = async (e) => {
     e.preventDefault();
+    setError('');
     
     // Validar que las contraseñas coincidan
     if (datos.password !== datos.password2) {
-      alert('Las contraseñas no coinciden');
+      setError('Las contraseñas no coinciden');
       return;
     }
 
-    alert('Registro exitoso!');
-    cambiarVista('login');
-  };
+    setCargando(true);
 
+    // Preparar datos para enviar
+    const datosEnviar = {
+      nombre: datos.nombreEmpresa,
+      nit: datos.nit,
+      email: datos.email,
+      password: datos.password,
+      telefono: datos.telefono,
+      direccion: datos.direccion,
+      plan: datos.plan
+    };
+
+    const resultado = await api.registerMicroempresa(datosEnviar);
+
+    if (resultado.success) {
+      alert('¡Empresa registrada exitosamente!');
+      cambiarVista('login');
+    } else {
+      setError(resultado.message || 'Error al registrar la empresa');
+    }
+
+    setCargando(false);
+  };
+  <button
+    type="submit"
+    disabled={cargando}
+    style={{
+      flex: 1,
+      padding: '12px',
+      backgroundColor: cargando ? '#666' : '#ff9800',
+      color: cargando ? '#aaa' : '#000',
+      border: 'none',
+      borderRadius: '5px',
+      cursor: cargando ? 'not-allowed' : 'pointer',
+      fontWeight: 'bold',
+      boxShadow: cargando ? 'none' : '0 4px 15px rgba(255,152,0,0.4)'
+    }}
+  >
+    {cargando ? '⏳ Registrando...' : 'Registrar Empresa'}
+  </button>
   return (
     <div style={{ 
       minHeight: '100vh', 

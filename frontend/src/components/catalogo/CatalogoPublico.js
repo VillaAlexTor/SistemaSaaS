@@ -1,11 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MICROEMPRESAS } from '../../data/datosSimulados';
-
+import { api } from '../../services/api';
 // Catálogo público de empresas (sin necesidad de login)
 function CatalogoPublico({ cambiarVista }) {
-  const [empresas] = useState(MICROEMPRESAS.filter(e => e.activo));
+  const [empresas, setEmpresas] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState('');
   const [filtroRubro, setFiltroRubro] = useState('todos');
+
+  // Cargar empresas al montar el componente
+  useEffect(() => {
+    cargarEmpresas();
+  }, []);
+
+  const cargarEmpresas = async () => {
+    setCargando(true);
+    const resultado = await api.getMicroempresas();
+    
+    if (resultado.success) {
+      setEmpresas(resultado.data);
+    } else {
+      console.error('Error al cargar empresas');
+    }
+    
+    setCargando(false);
+  };
+
+  // Obtener rubros únicos
+  const rubros = [...new Set(empresas.map(e => e.rubro).filter(Boolean))];
 
   // Obtener rubros únicos
   const rubros = [...new Set(empresas.map(e => e.rubro))];
@@ -17,7 +39,24 @@ function CatalogoPublico({ cambiarVista }) {
     const coincideRubro = filtroRubro === 'todos' || e.rubro === filtroRubro;
     return coincideBusqueda && coincideRubro;
   });
+  {/* Indicador de carga */}
+  {cargando && (
+    <div style={{
+      textAlign: 'center',
+      padding: '60px',
+      color: '#ff9800',
+      fontSize: '18px'
+    }}>
+      ⏳ Cargando empresas...
+    </div>
+  )}
 
+  {/* Grid de empresas (solo mostrar si no está cargando) */}
+  {!cargando && (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '25px' }}>
+      {/* ... resto del código de empresas */}
+    </div>
+  )}
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#1a1a1a' }}>
       {/* Header con botones de autenticación */}

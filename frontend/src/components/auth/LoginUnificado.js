@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { autenticarAdmin, autenticarMicroempresa, autenticarUsuario } from '../../utils/auth';
-
+import { api } from '../../services/api';
 // Login Unificado - Detecta automáticamente el tipo de usuario
 function LoginUnificado({ cambiarVista, onLogin }) {
   const [email, setEmail] = useState('');
