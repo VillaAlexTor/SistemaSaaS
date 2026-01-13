@@ -222,4 +222,175 @@ export const api = {
       return { success: false, message: 'Error de conexión' };
     }
   },
+  // ==================== ADMINISTRACIÓN ====================
+
+  // Obtener todas las microempresas (para admin)
+  getAllMicroempresas: async () => {
+    try {
+      const response = await fetch(`${API_URL}/microempresas/`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener microempresas:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Actualizar estado de microempresa (activar/desactivar)
+  updateMicroempresaEstado: async (id, activo) => {
+    try {
+      const response = await fetch(`${API_URL}/microempresas/${id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ activo })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al actualizar estado' };
+      }
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Eliminar microempresa
+  deleteMicroempresa: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/microempresas/${id}/`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        return { success: true };
+      } else {
+        return { success: false, message: 'Error al eliminar' };
+      }
+    } catch (error) {
+      console.error('Error al eliminar microempresa:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Obtener todos los usuarios (para admin)
+  getAllUsuarios: async () => {
+    try {
+      const response = await fetch(`${API_URL}/usuarios/`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Actualizar estado de usuario
+  updateUsuarioEstado: async (id, activo) => {
+    try {
+      const response = await fetch(`${API_URL}/usuarios/${id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ activo })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al actualizar estado' };
+      }
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Eliminar usuario
+  deleteUsuario: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/usuarios/${id}/`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        return { success: true };
+      } else {
+        return { success: false, message: 'Error al eliminar' };
+      }
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+  // ==================== MICROEMPRESA - Dashboard ====================
+
+  // Obtener estadísticas de la microempresa
+  getEstadisticasMicroempresa: async (microempresaId) => {
+    try {
+      // Por ahora, obtener datos básicos de diferentes endpoints
+      const [productos, ventas, clientes] = await Promise.all([
+        fetch(`${API_URL}/productos/?microempresa=${microempresaId}`),
+        fetch(`${API_URL}/ventas/?microempresa=${microempresaId}`),
+        fetch(`${API_URL}/clientes/?microempresa=${microempresaId}`)
+      ]);
+
+      const productosData = await productos.json();
+      const ventasData = await ventas.json();
+      const clientesData = await clientes.json();
+
+      return {
+        success: true,
+        data: {
+          totalProductos: productosData.length || 0,
+          totalVentas: ventasData.length || 0,
+          totalClientes: clientesData.length || 0,
+          productos: productosData || [],
+          ventas: ventasData || [],
+          clientes: clientesData || []
+        }
+      };
+    } catch (error) {
+      console.error('Error al obtener estadísticas:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Obtener productos de una microempresa
+  getProductosMicroempresa: async (microempresaId) => {
+    try {
+      const response = await fetch(`${API_URL}/productos/?microempresa=${microempresaId}`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener productos:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Obtener ventas de una microempresa
+  getVentasMicroempresa: async (microempresaId) => {
+    try {
+      const response = await fetch(`${API_URL}/ventas/?microempresa=${microempresaId}`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener ventas:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Obtener clientes de una microempresa
+  getClientesMicroempresa: async (microempresaId) => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/?microempresa=${microempresaId}`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener clientes:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  }
 };
