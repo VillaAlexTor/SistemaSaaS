@@ -20,7 +20,7 @@ class Administrador(models.Model):
         verbose_name_plural = 'Administradores'
     
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.pk and not self.password.startswith('pbkdf2_'):
             self.password = make_password(self.password)
         super().save(*args, **kwargs)
     

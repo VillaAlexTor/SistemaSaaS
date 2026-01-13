@@ -58,7 +58,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sistema_ventas_api.wsgi.application'
 
-# Configuración de Base de Datos MySQL/MariaDB
+# Configuración de Base de Datos MySQL
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
