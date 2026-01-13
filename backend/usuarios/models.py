@@ -16,8 +16,7 @@ class Usuario(models.Model):
         verbose_name_plural = 'Usuarios'
     
     def save(self, *args, **kwargs):
-        # Hashear contraseña si es nueva
-        if not self.pk:
+        if not self.pk and not self.password.startswith('pbkdf2_'):
             self.password = make_password(self.password)
         super().save(*args, **kwargs)
     

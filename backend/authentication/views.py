@@ -1,15 +1,20 @@
+# backend/authentication/views.py
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password
+
+# ✅ Imports correctos
 from .models import Administrador, UsuarioInterno, Notificacion
 from .serializers import AdministradorSerializer, UsuarioInternoSerializer, NotificacionSerializer
 from microempresas.models import Microempresa
 from usuarios.models import Usuario
 
+
 class AdministradorViewSet(viewsets.ModelViewSet):
     queryset = Administrador.objects.all()
     serializer_class = AdministradorSerializer
+
 
 class UsuarioInternoViewSet(viewsets.ModelViewSet):
     queryset = UsuarioInterno.objects.all()
@@ -22,6 +27,7 @@ class UsuarioInternoViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(microempresa_id=microempresa_id)
         return queryset
 
+
 class NotificacionViewSet(viewsets.ModelViewSet):
     queryset = Notificacion.objects.all()
     serializer_class = NotificacionSerializer
@@ -32,6 +38,7 @@ class NotificacionViewSet(viewsets.ModelViewSet):
         if microempresa_id:
             queryset = queryset.filter(microempresa_id=microempresa_id)
         return queryset
+
 
 # Vista de Login Unificado
 class LoginView(viewsets.ViewSet):

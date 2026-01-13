@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
+
 // Formulario de Registro de Microempresa
 function RegisterForm({ cambiarVista }) {
-  // Datos del formulario
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
   const [datos, setDatos] = useState({
@@ -11,23 +11,21 @@ function RegisterForm({ cambiarVista }) {
     direccion: '',
     telefono: '',
     email: '',
+    rubro: '',
     nombreAdmin: '',
     password: '',
     password2: '',
     plan: 'basico'
   });
 
-  // Cambiar datos del formulario
   const cambiarDato = (campo, valor) => {
     setDatos({ ...datos, [campo]: valor });
   };
 
-  // Enviar formulario
   const enviar = async (e) => {
     e.preventDefault();
     setError('');
     
-    // Validar que las contraseñas coincidan
     if (datos.password !== datos.password2) {
       setError('Las contraseñas no coinciden');
       return;
@@ -35,7 +33,6 @@ function RegisterForm({ cambiarVista }) {
 
     setCargando(true);
 
-    // Preparar datos para enviar
     const datosEnviar = {
       nombre: datos.nombreEmpresa,
       nit: datos.nit,
@@ -43,6 +40,7 @@ function RegisterForm({ cambiarVista }) {
       password: datos.password,
       telefono: datos.telefono,
       direccion: datos.direccion,
+      rubro: datos.rubro, 
       plan: datos.plan
     };
 
@@ -57,23 +55,7 @@ function RegisterForm({ cambiarVista }) {
 
     setCargando(false);
   };
-  <button
-    type="submit"
-    disabled={cargando}
-    style={{
-      flex: 1,
-      padding: '12px',
-      backgroundColor: cargando ? '#666' : '#ff9800',
-      color: cargando ? '#aaa' : '#000',
-      border: 'none',
-      borderRadius: '5px',
-      cursor: cargando ? 'not-allowed' : 'pointer',
-      fontWeight: 'bold',
-      boxShadow: cargando ? 'none' : '0 4px 15px rgba(255,152,0,0.4)'
-    }}
-  >
-    {cargando ? '⏳ Registrando...' : 'Registrar Empresa'}
-  </button>
+
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -89,7 +71,6 @@ function RegisterForm({ cambiarVista }) {
         boxShadow: '0 4px 20px rgba(255,152,0,0.3)',
         border: '1px solid #3d3d3d'
       }}>
-        {/* Encabezado */}
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <h1 style={{ color: '#ff9800', marginBottom: '10px' }}>
             📝 Registro de Microempresa
@@ -97,9 +78,21 @@ function RegisterForm({ cambiarVista }) {
           <p style={{ color: '#aaa' }}>Completa todos los datos para registrarte</p>
         </div>
 
-        {/* Formulario */}
+        {error && (
+          <div style={{
+            backgroundColor: '#4d1f1f',
+            color: '#ff6b6b',
+            padding: '12px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            border: '1px solid #ff6b6b',
+            fontSize: '14px'
+          }}>
+            ⚠️ {error}
+          </div>
+        )}
+
         <form onSubmit={enviar}>
-          {/* Datos de la Empresa */}
           <div style={{ marginBottom: '25px' }}>
             <h3 style={{ color: '#ff9800', marginBottom: '15px', borderBottom: '2px solid #ff9800', paddingBottom: '5px' }}>
               Datos de la Empresa
@@ -177,8 +170,27 @@ function RegisterForm({ cambiarVista }) {
               />
             </div>
           </div>
-
-          {/* Datos del Administrador */}
+          <div style={{ marginTop: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: '#fff' }}>
+              Rubro / Giro del Negocio
+            </label>
+            <select
+              value={datos.rubro}
+              onChange={(e) => cambiarDato('rubro', e.target.value)}
+              required
+              style={{ width: '100%', padding: '8px', border: '2px solid #444', borderRadius: '5px', backgroundColor: '#1a1a1a', color: '#fff' }}
+            >
+              <option value="">Selecciona un rubro</option>
+              <option value="Abarrotes">🛒 Abarrotes</option>
+              <option value="Restaurante">🍽️ Restaurante</option>
+              <option value="Farmacia">💊 Farmacia</option>
+              <option value="Ferretería">🔨 Ferretería</option>
+              <option value="Ropa">👔 Ropa y Accesorios</option>
+              <option value="Tecnología">💻 Tecnología</option>
+              <option value="Servicios">🔧 Servicios</option>
+              <option value="Otro">📦 Otro</option>
+            </select>
+          </div>
           <div style={{ marginBottom: '25px' }}>
             <h3 style={{ color: '#ff9800', marginBottom: '15px', borderBottom: '2px solid #ff9800', paddingBottom: '5px' }}>
               Datos del Administrador
@@ -230,14 +242,12 @@ function RegisterForm({ cambiarVista }) {
             </div>
           </div>
 
-          {/* Plan de Suscripción */}
           <div style={{ marginBottom: '25px' }}>
             <h3 style={{ color: '#ff9800', marginBottom: '15px', borderBottom: '2px solid #ff9800', paddingBottom: '5px' }}>
               Selecciona tu Plan
             </h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-              {/* Plan Básico */}
               <div
                 onClick={() => cambiarDato('plan', 'basico')}
                 style={{
@@ -257,7 +267,6 @@ function RegisterForm({ cambiarVista }) {
                 </p>
               </div>
 
-              {/* Plan Premium */}
               <div
                 onClick={() => cambiarDato('plan', 'premium')}
                 style={{
@@ -279,7 +288,6 @@ function RegisterForm({ cambiarVista }) {
             </div>
           </div>
 
-          {/* Términos y condiciones */}
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'flex', alignItems: 'center', fontSize: '13px', color: '#aaa' }}>
               <input type="checkbox" required style={{ marginRight: '8px' }} />
@@ -287,7 +295,6 @@ function RegisterForm({ cambiarVista }) {
             </label>
           </div>
 
-          {/* Botones */}
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               type="button"
@@ -307,19 +314,20 @@ function RegisterForm({ cambiarVista }) {
             </button>
             <button
               type="submit"
+              disabled={cargando}
               style={{
                 flex: 1,
                 padding: '12px',
-                backgroundColor: '#ff9800',
-                color: '#000',
+                backgroundColor: cargando ? '#666' : '#ff9800',
+                color: cargando ? '#aaa' : '#000',
                 border: 'none',
                 borderRadius: '5px',
-                cursor: 'pointer',
+                cursor: cargando ? 'not-allowed' : 'pointer',
                 fontWeight: 'bold',
-                boxShadow: '0 4px 15px rgba(255,152,0,0.4)'
+                boxShadow: cargando ? 'none' : '0 4px 15px rgba(255,152,0,0.4)'
               }}
             >
-              Registrar Empresa
+              {cargando ? '⏳ Registrando...' : 'Registrar Empresa'}
             </button>
           </div>
         </form>

@@ -1,14 +1,10 @@
 # backend/sistema_ventas_api/settings.py
-
 import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 SECRET_KEY = 'tu-clave-secreta-aqui-cambiarla-en-produccion'
-
 DEBUG = True
-
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Aplicaciones instaladas
@@ -34,7 +30,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # CORS debe ir aquí
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -62,7 +58,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sistema_ventas_api.wsgi.application'
 
-# Configuración de Base de Datos MySQL
+# Configuración de Base de Datos MySQL/MariaDB
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -72,8 +68,6 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'isolation_level': 'read committed',
             'charset': 'utf8mb4',
         },
     }
@@ -103,7 +97,6 @@ USE_TZ = True
 
 # Archivos estáticos
 STATIC_URL = 'static/'
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuración de REST Framework
@@ -116,7 +109,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Configuración CORS para permitir peticiones desde React
+# Configuración CORS
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",

@@ -13,10 +13,17 @@ export const api = {
         },
         body: JSON.stringify({ email, password })
       });
-      return await response.json();
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        return data;
+      } else {
+        return { success: false, message: data.message || 'Error en login' };
+      }
     } catch (error) {
       console.error('Error en login:', error);
-      return { success: false, message: 'Error de conexión con el servidor' };
+      return { success: false, message: 'Error de conexión con el servidor. Verifica que Django esté corriendo en http://127.0.0.1:8000' };
     }
   },
 
@@ -25,6 +32,9 @@ export const api = {
   // Registrar usuario
   registerUsuario: async (datos) => {
     try {
+      console.log('📤 Enviando datos al servidor:', datos);
+      console.log('🌐 URL:', `${API_URL}/usuarios/`);
+      
       const response = await fetch(`${API_URL}/usuarios/`, {
         method: 'POST',
         headers: {
@@ -33,16 +43,45 @@ export const api = {
         body: JSON.stringify(datos)
       });
       
+      console.log('📥 Respuesta del servidor - Status:', response.status);
+      
       const result = await response.json();
+      console.log('📥 Respuesta del servidor - Data:', result);
       
       if (response.ok) {
         return { success: true, data: result };
       } else {
-        return { success: false, message: 'Error al registrar usuario', errors: result };
+        // Intentar extraer mensajes de error específicos
+        let errorMsg = 'Error al registrar usuario';
+        
+        if (result.email) {
+          errorMsg = `Email: ${result.email[0]}`;
+        } else if (result.password) {
+          errorMsg = `Password: ${result.password[0]}`;
+        } else if (result.detail) {
+          errorMsg = result.detail;
+        } else if (result.message) {
+          errorMsg = result.message;
+        }
+        
+        return { success: false, message: errorMsg, errors: result };
       }
     } catch (error) {
-      console.error('Error en registro de usuario:', error);
-      return { success: false, message: 'Error de conexión con el servidor' };
+      console.error('❌ Error en registro de usuario:', error);
+      console.error('❌ Tipo de error:', error.name);
+      console.error('❌ Mensaje:', error.message);
+      
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        return { 
+          success: false, 
+          message: '🔴 No se pudo conectar con el servidor. Asegúrate de que Django esté corriendo en http://127.0.0.1:8000' 
+        };
+      }
+      
+      return { 
+        success: false, 
+        message: `Error de conexión: ${error.message}` 
+      };
     }
   },
 
@@ -63,6 +102,8 @@ export const api = {
   // Registrar microempresa
   registerMicroempresa: async (datos) => {
     try {
+      console.log('📤 Enviando datos de microempresa:', datos);
+      
       const response = await fetch(`${API_URL}/microempresas/`, {
         method: 'POST',
         headers: {
@@ -71,16 +112,32 @@ export const api = {
         body: JSON.stringify(datos)
       });
       
+      console.log('📥 Respuesta - Status:', response.status);
+      
       const result = await response.json();
+      console.log('📥 Respuesta - Data:', result);
       
       if (response.ok) {
         return { success: true, data: result };
       } else {
-        return { success: false, message: 'Error al registrar microempresa', errors: result };
+        let errorMsg = 'Error al registrar microempresa';
+        
+        if (result.email) {
+          errorMsg = `Email: ${result.email[0]}`;
+        } else if (result.nit) {
+          errorMsg = `NIT: ${result.nit[0]}`;
+        } else if (result.detail) {
+          errorMsg = result.detail;
+        }
+        
+        return { success: false, message: errorMsg, errors: result };
       }
     } catch (error) {
-      console.error('Error en registro de microempresa:', error);
-      return { success: false, message: 'Error de conexión con el servidor' };
+      console.error('❌ Error en registro de microempresa:', error);
+      return { 
+        success: false, 
+        message: '🔴 No se pudo conectar con el servidor. Verifica que Django esté corriendo.' 
+      };
     }
   },
 

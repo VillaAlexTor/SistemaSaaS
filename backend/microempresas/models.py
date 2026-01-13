@@ -26,8 +26,7 @@ class Microempresa(models.Model):
         verbose_name_plural = 'Microempresas'
     
     def save(self, *args, **kwargs):
-        # Hashear contraseña si es nueva
-        if not self.pk or 'password' in kwargs.get('update_fields', []):
+        if not self.pk and not self.password.startswith('pbkdf2_'):
             self.password = make_password(self.password)
         super().save(*args, **kwargs)
     

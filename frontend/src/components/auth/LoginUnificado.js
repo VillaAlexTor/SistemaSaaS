@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { autenticarAdmin, autenticarMicroempresa, autenticarUsuario } from '../../utils/auth';
 import { api } from '../../services/api';
-// Login Unificado - Detecta automáticamente el tipo de usuario
+
+// Login Unificado - Conectado a la API real de Django
 function LoginUnificado({ cambiarVista, onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -9,46 +9,30 @@ function LoginUnificado({ cambiarVista, onLogin }) {
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
 
-  // Función para detectar y autenticar automáticamente
-  const enviarFormulario = (e) => {
+  // Función para autenticar usando la API real
+  const enviarFormulario = async (e) => {
     e.preventDefault();
     setError('');
     setCargando(true);
 
-    setTimeout(() => {
-      // Intentar autenticar en orden: Admin -> Microempresa -> Usuario
+    try {
+      // Llamar a la API real de Django
+      const resultado = await api.login(email, password);
       
-      // 1. Intentar como Admin
-      let resultado = autenticarAdmin(email, password);
-      if (resultado.success) {
-        alert(`¡Bienvenido Administrador!`);
-        onLogin(resultado.usuario);
-        setCargando(false);
-        return;
-      }
+      console.log('📥 Respuesta del login:', resultado);
 
-      // 2. Intentar como Microempresa
-      resultado = autenticarMicroempresa(email, password);
       if (resultado.success) {
         alert(`¡Bienvenido ${resultado.usuario.nombre}!`);
         onLogin(resultado.usuario);
-        setCargando(false);
-        return;
+      } else {
+        setError(resultado.message || 'Email o contraseña incorrectos');
       }
-
-      // 3. Intentar como Usuario
-      resultado = autenticarUsuario(email, password);
-      if (resultado.success) {
-        alert(`¡Bienvenido ${resultado.usuario.nombre}!`);
-        onLogin(resultado.usuario);
-        setCargando(false);
-        return;
-      }
-
-      // Si ninguno funcionó, mostrar error
-      setError('Email o contraseña incorrectos');
+    } catch (error) {
+      console.error('❌ Error en login:', error);
+      setError('Error de conexión con el servidor');
+    } finally {
       setCargando(false);
-    }, 500);
+    }
   };
 
   return (
@@ -187,7 +171,7 @@ function LoginUnificado({ cambiarVista, onLogin }) {
             </div>
           </div>
 
-          {/* Usuarios de prueba */}
+          {/* Usuario de prueba */}
           <div style={{
             backgroundColor: '#1a1a1a',
             padding: '15px',
@@ -197,39 +181,15 @@ function LoginUnificado({ cambiarVista, onLogin }) {
             fontSize: '12px'
           }}>
             <p style={{ margin: 0, color: '#ff9800', fontWeight: 'bold', marginBottom: '10px' }}>
-              🧪 Usuarios de Prueba:
+              🧪 Usuario de Prueba Registrado:
             </p>
             
-            <div style={{ marginBottom: '8px', paddingLeft: '10px', borderLeft: '3px solid #9c27b0' }}>
-              <p style={{ margin: 0, color: '#9c27b0', fontWeight: 'bold', fontSize: '11px' }}>
-                👑 ADMINISTRADOR
-              </p>
-              <p style={{ margin: 0, color: '#aaa' }}>
-                📧 <strong style={{ color: '#fff' }}>admin@sistema.com</strong> / 🔒 admin123
-              </p>
-            </div>
-
-            <div style={{ marginBottom: '8px', paddingLeft: '10px', borderLeft: '3px solid #2196f3' }}>
-              <p style={{ margin: 0, color: '#2196f3', fontWeight: 'bold', fontSize: '11px' }}>
-                🏪 MICROEMPRESAS
-              </p>
-              <p style={{ margin: 0, color: '#aaa' }}>
-                📧 <strong style={{ color: '#fff' }}>juanito@tienda.com</strong> / 🔒 tienda123
-              </p>
-              <p style={{ margin: 0, color: '#aaa' }}>
-                📧 <strong style={{ color: '#fff' }}>farmacia@gmail.com</strong> / 🔒 farmacia123
-              </p>
-            </div>
-
             <div style={{ paddingLeft: '10px', borderLeft: '3px solid #ff9800' }}>
               <p style={{ margin: 0, color: '#ff9800', fontWeight: 'bold', fontSize: '11px' }}>
-                🛒 USUARIOS
+                🛒 USUARIO
               </p>
               <p style={{ margin: 0, color: '#aaa' }}>
-                📧 <strong style={{ color: '#fff' }}>usuario@gmail.com</strong> / 🔒 user123
-              </p>
-              <p style={{ margin: 0, color: '#aaa' }}>
-                📧 <strong style={{ color: '#fff' }}>comprador@gmail.com</strong> / 🔒 comp123
+                📧 <strong style={{ color: '#fff' }}>alejandro@gmail.com</strong> / 🔒 123456
               </p>
             </div>
           </div>

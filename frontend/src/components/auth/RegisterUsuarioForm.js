@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
-// Formulario de Registro para Usuarios Normales (Compradores)
+
 function RegisterUsuarioForm({ cambiarVista }) {
   const [verPassword, setVerPassword] = useState(false);
   const [verPassword2, setVerPassword2] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
 
-  // Datos del formulario
   const [datos, setDatos] = useState({
     nombre: '',
     apellido: '',
@@ -18,36 +17,19 @@ function RegisterUsuarioForm({ cambiarVista }) {
     aceptaTerminos: false
   });
 
-  // Cambiar datos del formulario
   const cambiarDato = (campo, valor) => {
     setDatos({ ...datos, [campo]: valor });
   };
-  {/* Mensaje de error */}
-  {error && (
-    <div style={{
-      backgroundColor: '#4d1f1f',
-      color: '#ff6b6b',
-      padding: '12px',
-      borderRadius: '8px',
-      marginBottom: '20px',
-      border: '1px solid #ff6b6b',
-      fontSize: '14px'
-    }}>
-      ⚠️ {error}
-    </div>
-  )}
-  // Enviar formulario
+  
   const enviar = async (e) => {
     e.preventDefault();
     setError('');
     
-    // Validar que las contraseñas coincidan
     if (datos.password !== datos.password2) {
       setError('Las contraseñas no coinciden');
       return;
     }
 
-    // Validar términos y condiciones
     if (!datos.aceptaTerminos) {
       setError('Debes aceptar los términos y condiciones');
       return;
@@ -55,7 +37,6 @@ function RegisterUsuarioForm({ cambiarVista }) {
 
     setCargando(true);
 
-    // Preparar datos para enviar (sin password2 y aceptaTerminos)
     const datosEnviar = {
       nombre: datos.nombre,
       apellido: datos.apellido,
@@ -94,7 +75,6 @@ function RegisterUsuarioForm({ cambiarVista }) {
         boxShadow: '0 8px 30px rgba(255,152,0,0.4)',
         border: '2px solid #ff9800'
       }}>
-        {/* Encabezado */}
         <div style={{ textAlign: 'center', marginBottom: '35px' }}>
           <div style={{
             width: '90px',
@@ -118,19 +98,24 @@ function RegisterUsuarioForm({ cambiarVista }) {
           </p>
         </div>
 
-        {/* Formulario */}
+        {error && (
+          <div style={{
+            backgroundColor: '#4d1f1f',
+            color: '#ff6b6b',
+            padding: '12px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            border: '1px solid #ff6b6b',
+            fontSize: '14px'
+          }}>
+            ⚠️ {error}
+          </div>
+        )}
+
         <form onSubmit={enviar}>
-          
-          {/* Nombre y Apellido */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
             <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: 'bold', 
-                color: '#fff',
-                fontSize: '14px'
-              }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#fff', fontSize: '14px' }}>
                 Nombre *
               </label>
               <input
@@ -139,29 +124,14 @@ function RegisterUsuarioForm({ cambiarVista }) {
                 onChange={(e) => cambiarDato('nombre', e.target.value)}
                 placeholder="Juan"
                 required
-                style={{ 
-                  width: '100%', 
-                  padding: '12px', 
-                  border: '2px solid #444', 
-                  borderRadius: '8px', 
-                  backgroundColor: '#1a1a1a', 
-                  color: '#fff',
-                  fontSize: '14px',
-                  transition: 'border-color 0.3s'
-                }}
+                style={{ width: '100%', padding: '12px', border: '2px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a', color: '#fff', fontSize: '14px', transition: 'border-color 0.3s' }}
                 onFocus={(e) => e.target.style.borderColor = '#ff9800'}
                 onBlur={(e) => e.target.style.borderColor = '#444'}
               />
             </div>
 
             <div>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
-                fontWeight: 'bold', 
-                color: '#fff',
-                fontSize: '14px'
-              }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#fff', fontSize: '14px' }}>
                 Apellido *
               </label>
               <input
@@ -170,31 +140,15 @@ function RegisterUsuarioForm({ cambiarVista }) {
                 onChange={(e) => cambiarDato('apellido', e.target.value)}
                 placeholder="Pérez"
                 required
-                style={{ 
-                  width: '100%', 
-                  padding: '12px', 
-                  border: '2px solid #444', 
-                  borderRadius: '8px', 
-                  backgroundColor: '#1a1a1a', 
-                  color: '#fff',
-                  fontSize: '14px',
-                  transition: 'border-color 0.3s'
-                }}
+                style={{ width: '100%', padding: '12px', border: '2px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a', color: '#fff', fontSize: '14px', transition: 'border-color 0.3s' }}
                 onFocus={(e) => e.target.style.borderColor = '#ff9800'}
                 onBlur={(e) => e.target.style.borderColor = '#444'}
               />
             </div>
           </div>
 
-          {/* Email */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: 'bold', 
-              color: '#fff',
-              fontSize: '14px'
-            }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#fff', fontSize: '14px' }}>
               Correo Electrónico *
             </label>
             <input
@@ -203,30 +157,14 @@ function RegisterUsuarioForm({ cambiarVista }) {
               onChange={(e) => cambiarDato('email', e.target.value)}
               placeholder="tu@email.com"
               required
-              style={{ 
-                width: '100%', 
-                padding: '12px', 
-                border: '2px solid #444', 
-                borderRadius: '8px', 
-                backgroundColor: '#1a1a1a', 
-                color: '#fff',
-                fontSize: '14px',
-                transition: 'border-color 0.3s'
-              }}
+              style={{ width: '100%', padding: '12px', border: '2px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a', color: '#fff', fontSize: '14px', transition: 'border-color 0.3s' }}
               onFocus={(e) => e.target.style.borderColor = '#ff9800'}
               onBlur={(e) => e.target.style.borderColor = '#444'}
             />
           </div>
 
-          {/* Teléfono */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: 'bold', 
-              color: '#fff',
-              fontSize: '14px'
-            }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#fff', fontSize: '14px' }}>
               Teléfono *
             </label>
             <input
@@ -235,30 +173,14 @@ function RegisterUsuarioForm({ cambiarVista }) {
               onChange={(e) => cambiarDato('telefono', e.target.value)}
               placeholder="+591 12345678"
               required
-              style={{ 
-                width: '100%', 
-                padding: '12px', 
-                border: '2px solid #444', 
-                borderRadius: '8px', 
-                backgroundColor: '#1a1a1a', 
-                color: '#fff',
-                fontSize: '14px',
-                transition: 'border-color 0.3s'
-              }}
+              style={{ width: '100%', padding: '12px', border: '2px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a', color: '#fff', fontSize: '14px', transition: 'border-color 0.3s' }}
               onFocus={(e) => e.target.style.borderColor = '#ff9800'}
               onBlur={(e) => e.target.style.borderColor = '#444'}
             />
           </div>
 
-          {/* Contraseña */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: 'bold', 
-              color: '#fff',
-              fontSize: '14px'
-            }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#fff', fontSize: '14px' }}>
               Contraseña *
             </label>
             <div style={{ position: 'relative' }}>
@@ -269,48 +191,22 @@ function RegisterUsuarioForm({ cambiarVista }) {
                 placeholder="Mínimo 6 caracteres"
                 required
                 minLength="6"
-                style={{ 
-                  width: '100%', 
-                  padding: '12px', 
-                  paddingRight: '45px',
-                  border: '2px solid #444', 
-                  borderRadius: '8px', 
-                  backgroundColor: '#1a1a1a', 
-                  color: '#fff',
-                  fontSize: '14px',
-                  transition: 'border-color 0.3s'
-                }}
+                style={{ width: '100%', padding: '12px', paddingRight: '45px', border: '2px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a', color: '#fff', fontSize: '14px', transition: 'border-color 0.3s' }}
                 onFocus={(e) => e.target.style.borderColor = '#ff9800'}
                 onBlur={(e) => e.target.style.borderColor = '#444'}
               />
               <button
                 type="button"
                 onClick={() => setVerPassword(!verPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  border: 'none',
-                  background: 'none',
-                  cursor: 'pointer',
-                  fontSize: '20px'
-                }}
+                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', cursor: 'pointer', fontSize: '20px' }}
               >
                 {verPassword ? '🙈' : '👁️'}
               </button>
             </div>
           </div>
 
-          {/* Confirmar Contraseña */}
           <div style={{ marginBottom: '25px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              fontWeight: 'bold', 
-              color: '#fff',
-              fontSize: '14px'
-            }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#fff', fontSize: '14px' }}>
               Confirmar Contraseña *
             </label>
             <div style={{ position: 'relative' }}>
@@ -320,54 +216,22 @@ function RegisterUsuarioForm({ cambiarVista }) {
                 onChange={(e) => cambiarDato('password2', e.target.value)}
                 placeholder="Repetir contraseña"
                 required
-                style={{ 
-                  width: '100%', 
-                  padding: '12px',
-                  paddingRight: '45px',
-                  border: '2px solid #444', 
-                  borderRadius: '8px', 
-                  backgroundColor: '#1a1a1a', 
-                  color: '#fff',
-                  fontSize: '14px',
-                  transition: 'border-color 0.3s'
-                }}
+                style={{ width: '100%', padding: '12px', paddingRight: '45px', border: '2px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a', color: '#fff', fontSize: '14px', transition: 'border-color 0.3s' }}
                 onFocus={(e) => e.target.style.borderColor = '#ff9800'}
                 onBlur={(e) => e.target.style.borderColor = '#444'}
               />
               <button
                 type="button"
                 onClick={() => setVerPassword2(!verPassword2)}
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  border: 'none',
-                  background: 'none',
-                  cursor: 'pointer',
-                  fontSize: '20px'
-                }}
+                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'none', cursor: 'pointer', fontSize: '20px' }}
               >
                 {verPassword2 ? '🙈' : '👁️'}
               </button>
             </div>
           </div>
 
-          {/* Términos y condiciones */}
-          <div style={{ 
-            marginBottom: '25px',
-            padding: '15px',
-            backgroundColor: '#1a1a1a',
-            borderRadius: '8px',
-            border: '1px solid #444'
-          }}>
-            <label style={{ 
-              display: 'flex', 
-              alignItems: 'flex-start',
-              fontSize: '13px', 
-              color: '#aaa',
-              cursor: 'pointer'
-            }}>
+          <div style={{ marginBottom: '25px', padding: '15px', backgroundColor: '#1a1a1a', borderRadius: '8px', border: '1px solid #444' }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', fontSize: '13px', color: '#aaa', cursor: 'pointer' }}>
               <input 
                 type="checkbox"
                 checked={datos.aceptaTerminos}
@@ -381,14 +245,7 @@ function RegisterUsuarioForm({ cambiarVista }) {
             </label>
           </div>
 
-          {/* Beneficios */}
-          <div style={{
-            backgroundColor: 'rgba(255,152,0,0.1)',
-            border: '1px solid rgba(255,152,0,0.3)',
-            borderRadius: '8px',
-            padding: '15px',
-            marginBottom: '25px'
-          }}>
+          <div style={{ backgroundColor: 'rgba(255,152,0,0.1)', border: '1px solid rgba(255,152,0,0.3)', borderRadius: '8px', padding: '15px', marginBottom: '25px' }}>
             <p style={{ margin: '0 0 10px 0', color: '#ff9800', fontWeight: 'bold', fontSize: '14px' }}>
               ✨ Beneficios de crear tu cuenta:
             </p>
@@ -400,99 +257,60 @@ function RegisterUsuarioForm({ cambiarVista }) {
             </ul>
           </div>
 
-          {/* Botón Registrarse */}
           <button
             type="submit"
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)',
-              color: '#000',
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              boxShadow: '0 6px 20px rgba(255,152,0,0.4)',
-              marginBottom: '15px',
-              transition: 'all 0.3s ease'
-            }}
+            disabled={cargando}
+            style={{ width: '100%', padding: '14px', background: cargando ? '#666' : 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)', color: cargando ? '#aaa' : '#000', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: cargando ? 'not-allowed' : 'pointer', boxShadow: cargando ? 'none' : '0 6px 20px rgba(255,152,0,0.4)', marginBottom: '15px', transition: 'all 0.3s ease' }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 8px 25px rgba(255,152,0,0.6)';
+              if (!cargando) {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 25px rgba(255,152,0,0.6)';
+              }
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 6px 20px rgba(255,152,0,0.4)';
+              if (!cargando) {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 6px 20px rgba(255,152,0,0.4)';
+              }
             }}
           >
-            🚀 Crear mi Cuenta
+            {cargando ? '⏳ Registrando...' : '🚀 Crear mi Cuenta'}
           </button>
 
-          {/* Botón Cancelar */}
           <button
             type="button"
             onClick={() => cambiarVista('login')}
-            style={{
-              width: '100%',
-              padding: '14px',
-              backgroundColor: 'transparent',
-              color: '#ff9800',
-              border: '2px solid #ff9800',
-              borderRadius: '10px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
+            disabled={cargando}
+            style={{ width: '100%', padding: '14px', backgroundColor: 'transparent', color: '#ff9800', border: '2px solid #ff9800', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: cargando ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease' }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = 'rgba(255,152,0,0.1)';
+              if (!cargando) e.target.style.backgroundColor = 'rgba(255,152,0,0.1)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
+              if (!cargando) e.target.style.backgroundColor = 'transparent';
             }}
           >
             Cancelar
           </button>
         </form>
 
-        {/* Link para empresas */}
-        <div style={{ 
-          textAlign: 'center', 
-          marginTop: '25px',
-          paddingTop: '20px',
-          borderTop: '1px solid #3d3d3d'
-        }}>
+        <div style={{ textAlign: 'center', marginTop: '25px', paddingTop: '20px', borderTop: '1px solid #3d3d3d' }}>
           <p style={{ margin: '0 0 10px 0', color: '#aaa', fontSize: '14px' }}>
             ¿Tienes una microempresa?
           </p>
           <button
             onClick={() => cambiarVista('register')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#2196f3',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              textDecoration: 'underline',
-              fontSize: '14px'
-            }}
+            disabled={cargando}
+            style={{ background: 'none', border: 'none', color: '#2196f3', cursor: cargando ? 'not-allowed' : 'pointer', fontWeight: 'bold', textDecoration: 'underline', fontSize: '14px' }}
           >
             Registra tu Empresa aquí
           </button>
         </div>
 
-        {/* Volver al inicio */}
         <div style={{ textAlign: 'center', marginTop: '15px' }}>
           <button
             onClick={() => cambiarVista('home')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#888',
-              cursor: 'pointer',
-              fontSize: '13px'
-            }}
+            disabled={cargando}
+            style={{ background: 'none', border: 'none', color: '#888', cursor: cargando ? 'not-allowed' : 'pointer', fontSize: '13px' }}
           >
             ← Volver al inicio
           </button>
