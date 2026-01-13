@@ -50,7 +50,7 @@ function CatalogoPublico({ cambiarVista }) {
           {/* Botones de autenticación */}
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             <button
-              onClick={() => cambiarVista('register')}
+              onClick={() => cambiarVista('registerUsuario')}
               style={{
                 padding: '10px 25px',
                 backgroundColor: 'transparent',

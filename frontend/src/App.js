@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import HomePage from './components/home/HomePage';
 import LoginUnificado from './components/auth/LoginUnificado';
 import RegisterForm from './components/auth/RegisterForm';
+import RegisterUsuarioForm from './components/auth/RegisterUsuarioForm';
 import RecoverPasswordForm from './components/auth/RecoverPasswordForm';
 import Dashboard from './components/dashboard/Dashboard';
 import DashboardMicroempresa from './components/dashboard/DashboardMicroempresa';
@@ -45,6 +46,10 @@ function App() {
 
   if (vista === 'register') {
     return <RegisterForm cambiarVista={setVista} />;
+  }
+
+  if (vista === 'registerUsuario') {
+    return <RegisterUsuarioForm cambiarVista={setVista} />;
   }
 
   if (vista === 'recover') {
