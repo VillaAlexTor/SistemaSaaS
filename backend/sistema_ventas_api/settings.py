@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'microempresas',
     'usuarios',
     'productos',
+    'captcha',
 ]
 
 MIDDLEWARE = [
@@ -128,3 +129,5 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+RECAPTCHA_PUBLIC_KEY = '6LfT-UksAAAAAHhvNIhafMGE_Tf3tBtYQNY7Vv6P'  # Tu Site Key
+RECAPTCHA_PRIVATE_KEY = '6LfT-UksAAAAAEourVXJG3OCpUidY9TqPNesmISW'  # Tu Secret Key

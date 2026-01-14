@@ -34,26 +34,49 @@ function Dashboard({ usuario, cerrarSesion }) {
 
   const cambiarEstadoMicro = async (id) => {
     const micro = microempresas.find(m => m.id === id);
+    
+    console.log('🔍 Microempresa ANTES de cambiar:', micro);
+    console.log('🔍 Estado actual:', micro.activo);
+    console.log('🔍 Nuevo estado que se enviará:', !micro.activo);
+    
     const resultado = await api.updateMicroempresaEstado(id, !micro.activo);
     
+    console.log('📥 Respuesta de la API:', resultado);
+    
     if (resultado.success) {
-      setMicroempresas(microempresas.map(m => 
+      console.log('✅ API respondió exitosamente');
+      console.log('📊 Microempresas ANTES de actualizar estado:', microempresas);
+      
+      // Actualizar el estado local
+      const nuevasMicros = microempresas.map(m => 
         m.id === id ? { ...m, activo: !m.activo } : m
-      ));
-      alert(`Microempresa ${!micro.activo ? 'activada' : 'desactivada'} correctamente`);
-      cargarDatos(); // Recargar para reflejar cambios
+      );
+      
+      console.log('📊 Microempresas DESPUÉS de actualizar estado:', nuevasMicros);
+      
+      setMicroempresas(nuevasMicros);
+      
+      if (micro.activo) {
+        alert('✅ Microempresa enviada a la papelera');
+      } else {
+        alert('✅ Microempresa reactivada correctamente');
+      }
+      
+      // Recargar datos para asegurar sincronización
+      await cargarDatos();
     } else {
+      console.error('❌ Error en la API:', resultado);
       alert('Error al cambiar estado de la microempresa');
     }
   };
 
-  const eliminarMicro = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar esta microempresa? Esta acción no se puede deshacer.')) return;
+  const eliminarMicroPermanente = async (id) => {
+    if (!window.confirm('⚠️ ¿Estás seguro de ELIMINAR PERMANENTEMENTE esta microempresa? Esta acción NO se puede deshacer.')) return;
     
     const resultado = await api.deleteMicroempresa(id);
     if (resultado.success) {
       setMicroempresas(microempresas.filter(m => m.id !== id));
-      alert('Microempresa eliminada correctamente');
+      alert('🗑️ Microempresa eliminada permanentemente');
     } else {
       alert('Error al eliminar la microempresa');
     }
@@ -67,32 +90,46 @@ function Dashboard({ usuario, cerrarSesion }) {
       setUsuarios(usuarios.map(u => 
         u.id === id ? { ...u, activo: !u.activo } : u
       ));
-      alert(`Usuario ${!user.activo ? 'activado' : 'desactivado'} correctamente`);
-      cargarDatos(); // Recargar para reflejar cambios
+      
+      if (user.activo) {
+        alert('✅ Usuario enviado a la papelera');
+      } else {
+        alert('✅ Usuario reactivado correctamente');
+      }
+      
+      cargarDatos();
     } else {
       alert('Error al cambiar estado del usuario');
     }
   };
 
-  const eliminarUsuario = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este usuario? Esta acción no se puede deshacer.')) return;
+  const eliminarUsuarioPermanente = async (id) => {
+    if (!window.confirm('⚠️ ¿Estás seguro de ELIMINAR PERMANENTEMENTE este usuario? Esta acción NO se puede deshacer.')) return;
     
     const resultado = await api.deleteUsuario(id);
     if (resultado.success) {
       setUsuarios(usuarios.filter(u => u.id !== id));
-      alert('Usuario eliminado correctamente');
+      alert('🗑️ Usuario eliminado permanentemente');
     } else {
       alert('Error al eliminar el usuario');
     }
   };
 
-  const microsFiltradas = microempresas.filter(m =>
+  // Filtrar microempresas activas e inactivas
+  const microsActivas = microempresas.filter(m => m.activo);
+  const microsInactivas = microempresas.filter(m => !m.activo);
+
+  // Filtrar usuarios activos e inactivos
+  const usuariosActivos = usuarios.filter(u => u.activo);
+  const usuariosInactivos = usuarios.filter(u => !u.activo);
+
+  const microsFiltradas = microsActivas.filter(m =>
     (m.nombre && m.nombre.toLowerCase().includes(busquedaMicro.toLowerCase())) ||
     (m.email && m.email.toLowerCase().includes(busquedaMicro.toLowerCase())) ||
     (m.rubro && m.rubro.toLowerCase().includes(busquedaMicro.toLowerCase()))
   );
 
-  const usuariosFiltrados = usuarios.filter(u =>
+  const usuariosFiltrados = usuariosActivos.filter(u =>
     (u.nombre && u.nombre.toLowerCase().includes(busquedaUsuario.toLowerCase())) ||
     (u.apellido && u.apellido.toLowerCase().includes(busquedaUsuario.toLowerCase())) ||
     (u.email && u.email.toLowerCase().includes(busquedaUsuario.toLowerCase()))
@@ -100,13 +137,13 @@ function Dashboard({ usuario, cerrarSesion }) {
 
   const stats = {
     totalMicros: microempresas.length,
-    microsActivas: microempresas.filter(m => m.activo).length,
-    microsInactivas: microempresas.filter(m => !m.activo).length,
-    microsPremium: microempresas.filter(m => m.plan === 'premium').length,
-    microsBasico: microempresas.filter(m => m.plan === 'basico').length,
+    microsActivas: microsActivas.length,
+    microsInactivas: microsInactivas.length,
+    microsPremium: microsActivas.filter(m => m.plan === 'premium').length,
+    microsBasico: microsActivas.filter(m => m.plan === 'basico').length,
     totalUsuarios: usuarios.length,
-    usuariosActivos: usuarios.filter(u => u.activo).length,
-    usuariosInactivos: usuarios.filter(u => !u.activo).length
+    usuariosActivos: usuariosActivos.length,
+    usuariosInactivos: usuariosInactivos.length
   };
 
   return (
@@ -141,11 +178,12 @@ function Dashboard({ usuario, cerrarSesion }) {
 
       {/* Navegación */}
       <div style={{ backgroundColor: '#2d2d2d', padding: '15px 30px', borderBottom: '1px solid #3d3d3d' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '10px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           {[
             { id: 'inicio', icono: '🏠', texto: 'Inicio' },
             { id: 'microempresas', icono: '🏪', texto: 'Microempresas' },
-            { id: 'usuarios', icono: '👥', texto: 'Usuarios' }
+            { id: 'usuarios', icono: '👥', texto: 'Usuarios' },
+            { id: 'papelera', icono: '🗑️', texto: 'Papelera', badge: microsInactivas.length + usuariosInactivos.length }
           ].map(item => (
             <button
               key={item.id}
@@ -159,10 +197,30 @@ function Dashboard({ usuario, cerrarSesion }) {
                 cursor: 'pointer',
                 fontWeight: 'bold',
                 fontSize: '14px',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                position: 'relative'
               }}
             >
               {item.icono} {item.texto}
+              {item.badge > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: '-8px',
+                  right: '-8px',
+                  backgroundColor: '#f44336',
+                  color: '#fff',
+                  borderRadius: '50%',
+                  width: '22px',
+                  height: '22px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '11px',
+                  fontWeight: 'bold'
+                }}>
+                  {item.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -185,18 +243,18 @@ function Dashboard({ usuario, cerrarSesion }) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
                   <StatCard titulo="Total Microempresas" valor={stats.totalMicros} icono="🏪" color="#ff9800" />
                   <StatCard titulo="Empresas Activas" valor={stats.microsActivas} icono="✅" color="#4caf50" />
-                  <StatCard titulo="Empresas Inactivas" valor={stats.microsInactivas} icono="❌" color="#f44336" />
+                  <StatCard titulo="En Papelera" valor={stats.microsInactivas} icono="🗑️" color="#f44336" />
                   <StatCard titulo="Planes Premium" valor={stats.microsPremium} icono="⭐" color="#ffb74d" />
                   <StatCard titulo="Planes Básico" valor={stats.microsBasico} icono="📦" color="#666" />
                   <StatCard titulo="Total Usuarios" valor={stats.totalUsuarios} icono="👥" color="#2196f3" />
                   <StatCard titulo="Usuarios Activos" valor={stats.usuariosActivos} icono="✔️" color="#4caf50" />
-                  <StatCard titulo="Usuarios Inactivos" valor={stats.usuariosInactivos} icono="🚫" color="#f44336" />
+                  <StatCard titulo="En Papelera" valor={stats.usuariosInactivos} icono="🗑️" color="#f44336" />
                 </div>
 
                 {/* Resumen de últimos registros */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                  <InfoCard titulo="🏪 Últimas Microempresas Registradas" items={microempresas.slice(0, 5)} tipo="micro" />
-                  <InfoCard titulo="👥 Últimos Usuarios Registrados" items={usuarios.slice(0, 5)} tipo="usuario" />
+                  <InfoCard titulo="🏪 Últimas Microempresas Registradas" items={microsActivas.slice(0, 5)} tipo="micro" />
+                  <InfoCard titulo="👥 Últimos Usuarios Registrados" items={usuariosActivos.slice(0, 5)} tipo="usuario" />
                 </div>
               </>
             )}
@@ -207,7 +265,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                   <div>
                     <h2 style={{ color: '#ff9800', margin: '0 0 5px 0' }}>🏪 Gestión de Microempresas</h2>
                     <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>
-                      Total: {microempresas.length} | Activas: {stats.microsActivas} | Inactivas: {stats.microsInactivas}
+                      Total: {microsActivas.length} Activas
                     </p>
                   </div>
                   <input
@@ -227,7 +285,6 @@ function Dashboard({ usuario, cerrarSesion }) {
                         <th style={{ padding: '12px', textAlign: 'left', color: '#ff9800', fontSize: '13px' }}>Email</th>
                         <th style={{ padding: '12px', textAlign: 'left', color: '#ff9800', fontSize: '13px' }}>Rubro</th>
                         <th style={{ padding: '12px', textAlign: 'left', color: '#ff9800', fontSize: '13px' }}>Plan</th>
-                        <th style={{ padding: '12px', textAlign: 'center', color: '#ff9800', fontSize: '13px' }}>Estado</th>
                         <th style={{ padding: '12px', textAlign: 'center', color: '#ff9800', fontSize: '13px' }}>Acciones</th>
                       </tr>
                     </thead>
@@ -243,17 +300,11 @@ function Dashboard({ usuario, cerrarSesion }) {
                             </span>
                           </td>
                           <td style={{ padding: '12px', textAlign: 'center' }}>
-                            <span style={{ padding: '5px 12px', borderRadius: '15px', backgroundColor: m.activo ? '#4caf50' : '#f44336', color: '#fff', fontSize: '12px', fontWeight: 'bold' }}>
-                              {m.activo ? '✅ Activa' : '❌ Inactiva'}
-                            </span>
-                          </td>
-                          <td style={{ padding: '12px', textAlign: 'center' }}>
                             <button 
                               onClick={() => cambiarEstadoMicro(m.id)} 
                               style={{ 
                                 padding: '6px 12px', 
-                                marginRight: '5px', 
-                                backgroundColor: m.activo ? '#f44336' : '#4caf50', 
+                                backgroundColor: '#f44336', 
                                 color: '#fff', 
                                 border: 'none', 
                                 borderRadius: '5px', 
@@ -262,22 +313,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                                 fontWeight: 'bold'
                               }}
                             >
-                              {m.activo ? '🔒 Desactivar' : '✅ Activar'}
-                            </button>
-                            <button 
-                              onClick={() => eliminarMicro(m.id)} 
-                              style={{ 
-                                padding: '6px 12px', 
-                                backgroundColor: '#d32f2f', 
-                                color: '#fff', 
-                                border: 'none', 
-                                borderRadius: '5px', 
-                                cursor: 'pointer', 
-                                fontSize: '12px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              🗑️ Eliminar
+                              🗑️ Enviar a Papelera
                             </button>
                           </td>
                         </tr>
@@ -287,7 +323,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                   {microsFiltradas.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '40px', color: '#aaa' }}>
                       <div style={{ fontSize: '60px', marginBottom: '15px' }}>😕</div>
-                      <p style={{ margin: 0, fontSize: '16px' }}>No se encontraron microempresas con esos criterios</p>
+                      <p style={{ margin: 0, fontSize: '16px' }}>No se encontraron microempresas activas</p>
                     </div>
                   )}
                 </div>
@@ -300,7 +336,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                   <div>
                     <h2 style={{ color: '#ff9800', margin: '0 0 5px 0' }}>👥 Gestión de Usuarios</h2>
                     <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>
-                      Total: {usuarios.length} | Activos: {stats.usuariosActivos} | Inactivos: {stats.usuariosInactivos}
+                      Total: {usuariosActivos.length} Activos
                     </p>
                   </div>
                   <input
@@ -319,7 +355,6 @@ function Dashboard({ usuario, cerrarSesion }) {
                         <th style={{ padding: '12px', textAlign: 'left', color: '#ff9800', fontSize: '13px' }}>Nombre Completo</th>
                         <th style={{ padding: '12px', textAlign: 'left', color: '#ff9800', fontSize: '13px' }}>Email</th>
                         <th style={{ padding: '12px', textAlign: 'left', color: '#ff9800', fontSize: '13px' }}>Teléfono</th>
-                        <th style={{ padding: '12px', textAlign: 'center', color: '#ff9800', fontSize: '13px' }}>Estado</th>
                         <th style={{ padding: '12px', textAlign: 'center', color: '#ff9800', fontSize: '13px' }}>Acciones</th>
                       </tr>
                     </thead>
@@ -330,17 +365,11 @@ function Dashboard({ usuario, cerrarSesion }) {
                           <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{u.email}</td>
                           <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{u.telefono || 'Sin teléfono'}</td>
                           <td style={{ padding: '12px', textAlign: 'center' }}>
-                            <span style={{ padding: '5px 12px', borderRadius: '15px', backgroundColor: u.activo ? '#4caf50' : '#f44336', color: '#fff', fontSize: '12px', fontWeight: 'bold' }}>
-                              {u.activo ? '✅ Activo' : '❌ Inactivo'}
-                            </span>
-                          </td>
-                          <td style={{ padding: '12px', textAlign: 'center' }}>
                             <button 
                               onClick={() => cambiarEstadoUsuario(u.id)} 
                               style={{ 
                                 padding: '6px 12px', 
-                                marginRight: '5px', 
-                                backgroundColor: u.activo ? '#f44336' : '#4caf50', 
+                                backgroundColor: '#f44336', 
                                 color: '#fff', 
                                 border: 'none', 
                                 borderRadius: '5px', 
@@ -349,22 +378,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                                 fontWeight: 'bold'
                               }}
                             >
-                              {u.activo ? '🔒 Desactivar' : '✅ Activar'}
-                            </button>
-                            <button 
-                              onClick={() => eliminarUsuario(u.id)} 
-                              style={{ 
-                                padding: '6px 12px', 
-                                backgroundColor: '#d32f2f', 
-                                color: '#fff', 
-                                border: 'none', 
-                                borderRadius: '5px', 
-                                cursor: 'pointer', 
-                                fontSize: '12px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              🗑️ Eliminar
+                              🗑️ Enviar a Papelera
                             </button>
                           </td>
                         </tr>
@@ -374,63 +388,209 @@ function Dashboard({ usuario, cerrarSesion }) {
                   {usuariosFiltrados.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '40px', color: '#aaa' }}>
                       <div style={{ fontSize: '60px', marginBottom: '15px' }}>😕</div>
-                      <p style={{ margin: 0, fontSize: '16px' }}>No se encontraron usuarios con esos criterios</p>
+                      <p style={{ margin: 0, fontSize: '16px' }}>No se encontraron usuarios activos</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {vistaActual === 'papelera' && (
+              <>
+                <h2 style={{ color: '#f44336', marginBottom: '20px', fontSize: '28px' }}>
+                  🗑️ Papelera de Reciclaje
+                </h2>
+                <p style={{ color: '#aaa', marginBottom: '30px' }}>
+                  Aquí se encuentran los elementos desactivados. Puedes reactivarlos o eliminarlos permanentemente.
+                </p>
+
+                {/* Microempresas en papelera */}
+                <div style={{ marginBottom: '40px' }}>
+                  <h3 style={{ color: '#ff9800', marginBottom: '15px', fontSize: '20px' }}>
+                    🏪 Microempresas Desactivadas ({microsInactivas.length})
+                  </h3>
+                  
+                  {microsInactivas.length === 0 ? (
+                    <div style={{ backgroundColor: '#2d2d2d', borderRadius: '10px', padding: '40px', textAlign: 'center', border: '1px solid #3d3d3d' }}>
+                      <div style={{ fontSize: '60px', marginBottom: '15px', opacity: 0.5 }}>✨</div>
+                      <p style={{ color: '#aaa', margin: 0 }}>No hay microempresas en la papelera</p>
+                    </div>
+                  ) : (
+                    <div style={{ backgroundColor: '#2d2d2d', borderRadius: '10px', padding: '20px', overflowX: 'auto', border: '1px solid #3d3d3d' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '2px solid #f44336' }}>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Nombre</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Email</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Rubro</th>
+                            <th style={{ padding: '12px', textAlign: 'center', color: '#f44336', fontSize: '13px' }}>Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {microsInactivas.map(m => (
+                            <tr key={m.id} style={{ borderBottom: '1px solid #3d3d3d', opacity: 0.7 }}>
+                              <td style={{ padding: '12px', color: '#fff', fontSize: '14px' }}>{m.nombre}</td>
+                              <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{m.email}</td>
+                              <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{m.rubro || 'Sin rubro'}</td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <button 
+                                  onClick={() => cambiarEstadoMicro(m.id)} 
+                                  style={{ 
+                                    padding: '6px 12px', 
+                                    marginRight: '5px',
+                                    backgroundColor: '#4caf50', 
+                                    color: '#fff', 
+                                    border: 'none', 
+                                    borderRadius: '5px', 
+                                    cursor: 'pointer', 
+                                    fontSize: '12px',
+                                    fontWeight: 'bold'
+                                  }}
+                                >
+                                  ♻️ Reactivar
+                                </button>
+                                <button 
+                                  onClick={() => eliminarMicroPermanente(m.id)} 
+                                  style={{ 
+                                    padding: '6px 12px', 
+                                    backgroundColor: '#d32f2f', 
+                                    color: '#fff', 
+                                    border: 'none', 
+                                    borderRadius: '5px', 
+                                    cursor: 'pointer', 
+                                    fontSize: '12px',
+                                    fontWeight: 'bold'
+                                  }}
+                                >
+                                  ❌ Eliminar Permanente
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* Usuarios en papelera */}
+                <div>
+                  <h3 style={{ color: '#ff9800', marginBottom: '15px', fontSize: '20px' }}>
+                    👥 Usuarios Desactivados ({usuariosInactivos.length})
+                  </h3>
+                  
+                  {usuariosInactivos.length === 0 ? (
+                    <div style={{ backgroundColor: '#2d2d2d', borderRadius: '10px', padding: '40px', textAlign: 'center', border: '1px solid #3d3d3d' }}>
+                      <div style={{ fontSize: '60px', marginBottom: '15px', opacity: 0.5 }}>✨</div>
+                      <p style={{ color: '#aaa', margin: 0 }}>No hay usuarios en la papelera</p>
+                    </div>
+                  ) : (
+                    <div style={{ backgroundColor: '#2d2d2d', borderRadius: '10px', padding: '20px', overflowX: 'auto', border: '1px solid #3d3d3d' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '2px solid #f44336' }}>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Nombre Completo</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Email</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Teléfono</th>
+                            <th style={{ padding: '12px', textAlign: 'center', color: '#f44336', fontSize: '13px' }}>Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {usuariosInactivos.map(u => (
+                            <tr key={u.id} style={{ borderBottom: '1px solid #3d3d3d', opacity: 0.7 }}>
+                              <td style={{ padding: '12px', color: '#fff', fontSize: '14px' }}>{u.nombre} {u.apellido}</td>
+                              <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{u.email}</td>
+                              <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{u.telefono || 'Sin teléfono'}</td>
+                              <td style={{ padding: '12px', textAlign: 'center' }}>
+                                <button 
+                                  onClick={() => cambiarEstadoUsuario(u.id)} 
+                                  style={{ 
+                                    padding: '6px 12px', 
+                                    marginRight: '5px',
+                                    backgroundColor: '#4caf50', 
+                                    color: '#fff', 
+                                    border: 'none', 
+                                    borderRadius: '5px', 
+                                    cursor: 'pointer', 
+                                    fontSize: '12px',
+                                    fontWeight: 'bold'
+                                  }}
+                                >
+                                  ♻️ Reactivar
+                                </button>
+                                <button 
+                                  onClick={() => eliminarUsuarioPermanente(u.id)} 
+                                  style={{ 
+                                    padding: '6px 12px', 
+                                    backgroundColor: '#d32f2f', 
+                                    color: '#fff', 
+                                    border: 'none', 
+                                    borderRadius: '5px', 
+                                    cursor: 'pointer', 
+                                    fontSize: '12px',
+                                    fontWeight: 'bold'
+                                  }}
+                                >
+                                  ❌ Eliminar Permanente
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   )}
                 </div>
               </>
             )}
           </>
-        )}
-      </div>
-    </div>
-  );
+          )}
+  </div>
+</div>
+);
 }
-
 // Componente de tarjeta de estadística
 function StatCard({ titulo, valor, icono, color }) {
-  return (
-    <div style={{ backgroundColor: '#2d2d2d', padding: '20px', borderRadius: '10px', border: '1px solid #3d3d3d', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <p style={{ margin: 0, color: '#aaa', fontSize: '13px', marginBottom: '5px' }}>{titulo}</p>
-          <h2 style={{ margin: 0, color, fontSize: '32px', fontWeight: 'bold' }}>{valor}</h2>
-        </div>
-        <div style={{ fontSize: '45px', opacity: 0.8 }}>{icono}</div>
-      </div>
-    </div>
-  );
+return (
+<div style={{ backgroundColor: '#2d2d2d', padding: '20px', borderRadius: '10px', border: '1px solid #3d3d3d', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+<div>
+<p style={{ margin: 0, color: '#aaa', fontSize: '13px', marginBottom: '5px' }}>{titulo}</p>
+<h2 style={{ margin: 0, color, fontSize: '32px', fontWeight: 'bold' }}>{valor}</h2>
+</div>
+<div style={{ fontSize: '45px', opacity: 0.8 }}>{icono}</div>
+</div>
+</div>
+);
 }
-
 // Componente de tarjeta de información
 function InfoCard({ titulo, items, tipo }) {
-  return (
-    <div style={{ backgroundColor: '#2d2d2d', padding: '20px', borderRadius: '10px', border: '1px solid #3d3d3d', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-      <h3 style={{ margin: '0 0 15px 0', color: '#ff9800', borderBottom: '2px solid #ff9800', paddingBottom: '10px', fontSize: '18px' }}>{titulo}</h3>
-      {items.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '30px' }}>
-          <div style={{ fontSize: '50px', marginBottom: '10px', opacity: 0.5 }}>📭</div>
-          <p style={{ color: '#aaa', margin: 0, fontSize: '14px' }}>No hay registros todavía</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto' }}>
-          {items.map(item => (
-            <div key={item.id} style={{ padding: '12px', backgroundColor: '#1a1a1a', borderRadius: '8px', borderLeft: '4px solid #ff9800' }}>
-              <p style={{ margin: '0 0 5px 0', color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>
-                {tipo === 'micro' ? item.nombre : `${item.nombre} ${item.apellido}`}
-              </p>
-              <p style={{ margin: 0, color: '#aaa', fontSize: '12px' }}>{item.email}</p>
-              {tipo === 'micro' && item.rubro && (
-                <p style={{ margin: '5px 0 0 0', color: '#ff9800', fontSize: '11px', fontWeight: 'bold' }}>
-                  📂 {item.rubro}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+return (
+<div style={{ backgroundColor: '#2d2d2d', padding: '20px', borderRadius: '10px', border: '1px solid #3d3d3d', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+<h3 style={{ margin: '0 0 15px 0', color: '#ff9800', borderBottom: '2px solid #ff9800', paddingBottom: '10px', fontSize: '18px' }}>{titulo}</h3>
+{items.length === 0 ? (
+<div style={{ textAlign: 'center', padding: '30px' }}>
+<div style={{ fontSize: '50px', marginBottom: '10px', opacity: 0.5 }}>📭</div>
+<p style={{ color: '#aaa', margin: 0, fontSize: '14px' }}>No hay registros todavía</p>
+</div>
+) : (
+<div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto' }}>
+{items.map(item => (
+<div key={item.id} style={{ padding: '12px', backgroundColor: '#1a1a1a', borderRadius: '8px', borderLeft: '4px solid #ff9800' }}>
+<p style={{ margin: '0 0 5px 0', color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>
+{tipo === 'micro' ? item.nombre : `${item.nombre} ${item.apellido}`}
+</p>
+<p style={{ margin: 0, color: '#aaa', fontSize: '12px' }}>{item.email}</p>
+{tipo === 'micro' && item.rubro && (
+<p style={{ margin: '5px 0 0 0', color: '#ff9800', fontSize: '11px', fontWeight: 'bold' }}>
+📂 {item.rubro}
+</p>
+)}
+</div>
+))}
+</div>
+)}
+</div>
+);
 }
-
 export default Dashboard;

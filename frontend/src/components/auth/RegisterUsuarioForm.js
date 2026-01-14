@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { api } from '../../services/api';
 
 function RegisterUsuarioForm({ cambiarVista }) {
@@ -6,6 +7,7 @@ function RegisterUsuarioForm({ cambiarVista }) {
   const [verPassword2, setVerPassword2] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   const [datos, setDatos] = useState({
     nombre: '',
@@ -20,11 +22,22 @@ function RegisterUsuarioForm({ cambiarVista }) {
   const cambiarDato = (campo, valor) => {
     setDatos({ ...datos, [campo]: valor });
   };
-  
+
+  const onCaptchaChange = (token) => {
+    console.log('✅ Captcha completado:', token);
+    setCaptchaToken(token);
+    setError(''); // Limpiar errores previos
+  };
+
   const enviar = async (e) => {
     e.preventDefault();
     setError('');
     
+    if (!captchaToken) {
+      setError('Por favor completa el CAPTCHA');
+      return;
+    }
+
     if (datos.password !== datos.password2) {
       setError('Las contraseñas no coinciden');
       return;
@@ -42,7 +55,8 @@ function RegisterUsuarioForm({ cambiarVista }) {
       apellido: datos.apellido,
       email: datos.email,
       telefono: datos.telefono,
-      password: datos.password
+      password: datos.password,
+      recaptcha_token: captchaToken
     };
 
     const resultado = await api.registerUsuario(datosEnviar);
@@ -52,6 +66,8 @@ function RegisterUsuarioForm({ cambiarVista }) {
       cambiarVista('login');
     } else {
       setError(resultado.message || 'Error al registrar usuario');
+      setCaptchaToken(null);
+      window.grecaptcha.reset();
     }
 
     setCargando(false);
@@ -244,7 +260,14 @@ function RegisterUsuarioForm({ cambiarVista }) {
               </span>
             </label>
           </div>
-
+          {/* ✅ CAPTCHA - Agregar ANTES del botón de enviar */}
+            <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
+              <ReCAPTCHA
+                sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                onChange={onCaptchaChange}
+                theme="dark"
+              />
+            </div>
           <div style={{ backgroundColor: 'rgba(255,152,0,0.1)', border: '1px solid rgba(255,152,0,0.3)', borderRadius: '8px', padding: '15px', marginBottom: '25px' }}>
             <p style={{ margin: '0 0 10px 0', color: '#ff9800', fontWeight: 'bold', fontSize: '14px' }}>
               ✨ Beneficios de crear tu cuenta:
@@ -259,16 +282,29 @@ function RegisterUsuarioForm({ cambiarVista }) {
 
           <button
             type="submit"
-            disabled={cargando}
-            style={{ width: '100%', padding: '14px', background: cargando ? '#666' : 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)', color: cargando ? '#aaa' : '#000', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: cargando ? 'not-allowed' : 'pointer', boxShadow: cargando ? 'none' : '0 6px 20px rgba(255,152,0,0.4)', marginBottom: '15px', transition: 'all 0.3s ease' }}
+            disabled={cargando || !captchaToken}  // ✅ Validar captcha
+            style={{ 
+              width: '100%', 
+              padding: '14px', 
+              background: (cargando || !captchaToken) ? '#666' : 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)',  // ✅ Validar captcha
+              color: (cargando || !captchaToken) ? '#aaa' : '#000',  // ✅ Validar captcha
+              border: 'none', 
+              borderRadius: '10px', 
+              fontSize: '16px', 
+              fontWeight: 'bold', 
+              cursor: (cargando || !captchaToken) ? 'not-allowed' : 'pointer',  // ✅ Validar captcha
+              boxShadow: (cargando || !captchaToken) ? 'none' : '0 6px 20px rgba(255,152,0,0.4)',  // ✅ Validar captcha
+              marginBottom: '15px', 
+              transition: 'all 0.3s ease' 
+            }}
             onMouseEnter={(e) => {
-              if (!cargando) {
+              if (!cargando && captchaToken) {  // ✅ Solo si hay captcha
                 e.target.style.transform = 'translateY(-2px)';
                 e.target.style.boxShadow = '0 8px 25px rgba(255,152,0,0.6)';
               }
             }}
             onMouseLeave={(e) => {
-              if (!cargando) {
+              if (!cargando && captchaToken) {  // ✅ Solo si hay captcha
                 e.target.style.transform = 'translateY(0)';
                 e.target.style.boxShadow = '0 6px 20px rgba(255,152,0,0.4)';
               }

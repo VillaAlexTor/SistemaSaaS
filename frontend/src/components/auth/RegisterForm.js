@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { api } from '../../services/api';
 
 // Formulario de Registro de Microempresa
 function RegisterForm({ cambiarVista }) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+  const [captchaToken, setCaptchaToken] = useState(null);
   const [datos, setDatos] = useState({
     nombreEmpresa: '',
     nit: '',
@@ -22,9 +24,20 @@ function RegisterForm({ cambiarVista }) {
     setDatos({ ...datos, [campo]: valor });
   };
 
+  const onCaptchaChange = (token) => {
+    console.log('✅ Captcha completado:', token);
+    setCaptchaToken(token);
+    setError('');
+  };
   const enviar = async (e) => {
     e.preventDefault();
     setError('');
+    
+    // ✅ Validar captcha
+    if (!captchaToken) {
+      setError('Por favor completa el CAPTCHA');
+      return;
+    }
     
     if (datos.password !== datos.password2) {
       setError('Las contraseñas no coinciden');
@@ -40,8 +53,9 @@ function RegisterForm({ cambiarVista }) {
       password: datos.password,
       telefono: datos.telefono,
       direccion: datos.direccion,
-      rubro: datos.rubro, 
-      plan: datos.plan
+      rubro: datos.rubro,
+      plan: datos.plan,
+      recaptcha_token: captchaToken  // ✅ Agregar el token
     };
 
     const resultado = await api.registerMicroempresa(datosEnviar);
@@ -51,6 +65,9 @@ function RegisterForm({ cambiarVista }) {
       cambiarVista('login');
     } else {
       setError(resultado.message || 'Error al registrar la empresa');
+      // ✅ Resetear captcha si hay error
+      setCaptchaToken(null);
+      window.grecaptcha.reset();
     }
 
     setCargando(false);
@@ -294,7 +311,14 @@ function RegisterForm({ cambiarVista }) {
               Acepto los términos y condiciones del servicio
             </label>
           </div>
-
+          {/* ✅ CAPTCHA */}
+            <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
+              <ReCAPTCHA
+                sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                onChange={onCaptchaChange}
+                theme="dark"
+              />
+            </div>       
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               type="button"
@@ -314,17 +338,17 @@ function RegisterForm({ cambiarVista }) {
             </button>
             <button
               type="submit"
-              disabled={cargando}
+              disabled={cargando || !captchaToken}  // ✅ Agregar || !captchaToken
               style={{
                 flex: 1,
                 padding: '12px',
-                backgroundColor: cargando ? '#666' : '#ff9800',
-                color: cargando ? '#aaa' : '#000',
+                backgroundColor: (cargando || !captchaToken) ? '#666' : '#ff9800',  // ✅ Actualizar
+                color: (cargando || !captchaToken) ? '#aaa' : '#000',  // ✅ Actualizar
                 border: 'none',
                 borderRadius: '5px',
-                cursor: cargando ? 'not-allowed' : 'pointer',
+                cursor: (cargando || !captchaToken) ? 'not-allowed' : 'pointer',  // ✅ Actualizar
                 fontWeight: 'bold',
-                boxShadow: cargando ? 'none' : '0 4px 15px rgba(255,152,0,0.4)'
+                boxShadow: (cargando || !captchaToken) ? 'none' : '0 4px 15px rgba(255,152,0,0.4)'  // ✅ Actualizar
               }}
             >
               {cargando ? '⏳ Registrando...' : 'Registrar Empresa'}

@@ -16,7 +16,8 @@ function CatalogoPublico({ cambiarVista }) {
     const resultado = await api.getMicroempresas();
     
     if (resultado.success) {
-      setEmpresas(resultado.data);
+      // ✅ Filtrar solo empresas activas
+      setEmpresas(resultado.data.filter(e => e.activo));
     } else {
       console.error('Error al cargar empresas');
     }
