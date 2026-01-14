@@ -528,4 +528,35 @@ export const api = {
       return { success: false, message: 'Error de conexión' };
     }
   },
+  // ==================== REPORTES GLOBALES (ADMIN) ====================
+
+  // Obtener reportes globales del sistema
+  getReportesGlobales: async () => {
+    try {
+      const [microempresas, usuarios, productos, ventas] = await Promise.all([
+        fetch(`${API_URL}/microempresas/`),
+        fetch(`${API_URL}/usuarios/`),
+        fetch(`${API_URL}/productos/`),
+        fetch(`${API_URL}/ventas/`)
+      ]);
+
+      const microData = await microempresas.json();
+      const usuariosData = await usuarios.json();
+      const productosData = await productos.json();
+      const ventasData = await ventas.json();
+
+      return {
+        success: true,
+        data: {
+          microempresas: microData,
+          usuarios: usuariosData,
+          productos: productosData,
+          ventas: ventasData
+        }
+      };
+    } catch (error) {
+      console.error('Error al obtener reportes:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
 };

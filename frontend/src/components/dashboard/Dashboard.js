@@ -137,6 +137,7 @@ function Dashboard({ usuario, cerrarSesion }) {
             { id: 'inicio', icono: '🏠', texto: 'Inicio' },
             { id: 'microempresas', icono: '🏪', texto: 'Microempresas' },
             { id: 'usuarios', icono: '👥', texto: 'Usuarios' },
+            { id: 'reportes', icono: '📊', texto: 'Reportes' },  // ✅ NUEVA VISTA
             { id: 'papelera', icono: '🗑️', texto: 'Papelera', badge: microsInactivas.length + usuariosInactivos.length }
           ].map(item => (
             <button
@@ -347,7 +348,9 @@ function Dashboard({ usuario, cerrarSesion }) {
                 </div>
               </>
             )}
-
+            {vistaActual === 'reportes' && (
+              <VistaReportes microempresas={microempresas} usuarios={usuarios} />
+            )}
             {vistaActual === 'papelera' && (
               <>
                 <h2 style={{ color: '#f44336', marginBottom: '20px', fontSize: '28px' }}>🗑️ Papelera de Reciclaje</h2>
@@ -479,7 +482,369 @@ function Dashboard({ usuario, cerrarSesion }) {
     </div>
   );
 }
+// ============================================
+// COMPONENTE DE REPORTES GLOBALES
+// ============================================
 
+function VistaReportes({ microempresas, usuarios }) {
+  const [reportes, setReportes] = useState(null);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    cargarReportes();
+  }, []);
+
+  const cargarReportes = async () => {
+    setCargando(true);
+    const resultado = await api.getReportesGlobales();
+    
+    if (resultado.success) {
+      setReportes(resultado.data);
+    }
+    
+    setCargando(false);
+  };
+
+  if (cargando) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px' }}>
+        <div style={{ fontSize: '60px', marginBottom: '20px' }}>⏳</div>
+        <p style={{ color: '#ff9800', fontSize: '18px' }}>Cargando reportes...</p>
+      </div>
+    );
+  }
+
+  if (!reportes) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px' }}>
+        <div style={{ fontSize: '60px', marginBottom: '20px' }}>❌</div>
+        <p style={{ color: '#f44336', fontSize: '18px' }}>Error al cargar reportes</p>
+      </div>
+    );
+  }
+
+  // Calcular estadísticas
+  const microsActivas = reportes.microempresas.filter(m => m.activo);
+  const microsPremium = microsActivas.filter(m => m.plan === 'premium');
+  const microsBasico = microsActivas.filter(m => m.plan === 'basico');
+  
+  const totalVentas = reportes.ventas.reduce((sum, v) => sum + parseFloat(v.total || 0), 0);
+  const ventasHoy = reportes.ventas.filter(v => {
+    const hoy = new Date().toDateString();
+    const fechaVenta = new Date(v.fecha_venta).toDateString();
+    return hoy === fechaVenta;
+  });
+  const ventasSemana = reportes.ventas.filter(v => {
+    const hace7dias = new Date();
+    hace7dias.setDate(hace7dias.getDate() - 7);
+    return new Date(v.fecha_venta) >= hace7dias;
+  });
+
+  const ingresosPremium = microsPremium.length * 29; // $29 por plan premium
+
+  // Calcular productos más vendidos
+  const productosVendidos = {};
+  reportes.ventas.forEach(venta => {
+    if (venta.detalles) {
+      venta.detalles.forEach(detalle => {
+        const productoId = detalle.producto;
+        if (!productosVendidos[productoId]) {
+          productosVendidos[productoId] = {
+            nombre: detalle.producto_nombre || 'Producto',
+            cantidad: 0,
+            total: 0
+          };
+        }
+        productosVendidos[productoId].cantidad += detalle.cantidad;
+        productosVendidos[productoId].total += parseFloat(detalle.subtotal || 0);
+      });
+    }
+  });
+
+  const top10Productos = Object.values(productosVendidos)
+    .sort((a, b) => b.cantidad - a.cantidad)
+    .slice(0, 10);
+
+  // Calcular crecimiento de microempresas por mes (últimos 6 meses)
+  const crecimientoMicroempresas = calcularCrecimientoPorMes(reportes.microempresas);
+
+  return (
+    <div>
+      <h2 style={{ color: '#ff9800', marginBottom: '30px', fontSize: '28px' }}>
+        📊 Reportes Globales del Sistema
+      </h2>
+
+      {/* Estadísticas principales */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+        <ReporteStatCard 
+          titulo="Total Ventas del Sistema" 
+          valor={`Bs ${totalVentas.toFixed(2)}`} 
+          icono="💰" 
+          color="#4caf50"
+          subtitulo={`${reportes.ventas.length} ventas registradas`}
+        />
+        <ReporteStatCard 
+          titulo="Ventas Hoy" 
+          valor={ventasHoy.length} 
+          icono="📅" 
+          color="#2196f3"
+          subtitulo={`Bs ${ventasHoy.reduce((sum, v) => sum + parseFloat(v.total || 0), 0).toFixed(2)}`}
+        />
+        <ReporteStatCard 
+          titulo="Ventas esta Semana" 
+          valor={ventasSemana.length} 
+          icono="📈" 
+          color="#ff9800"
+          subtitulo={`Bs ${ventasSemana.reduce((sum, v) => sum + parseFloat(v.total || 0), 0).toFixed(2)}`}
+        />
+        <ReporteStatCard 
+          titulo="Ingresos por Planes Premium" 
+          valor={`$${ingresosPremium}`} 
+          icono="⭐" 
+          color="#ffb74d"
+          subtitulo={`${microsPremium.length} empresas premium`}
+        />
+        <ReporteStatCard 
+          titulo="Total Productos Registrados" 
+          valor={reportes.productos.length} 
+          icono="📦" 
+          color="#9c27b0"
+          subtitulo={`En ${microsActivas.length} microempresas`}
+        />
+        <ReporteStatCard 
+          titulo="Clientes Totales" 
+          valor={usuarios.length} 
+          icono="👥" 
+          color="#00bcd4"
+          subtitulo="Usuarios compradores"
+        />
+      </div>
+
+      {/* Gráficos y tablas */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginBottom: '30px' }}>
+        {/* Gráfico de crecimiento */}
+        <div style={{ backgroundColor: '#2d2d2d', padding: '25px', borderRadius: '15px', border: '1px solid #3d3d3d' }}>
+          <h3 style={{ color: '#ff9800', marginBottom: '20px', fontSize: '20px', borderBottom: '2px solid #ff9800', paddingBottom: '10px' }}>
+            📈 Crecimiento de Microempresas
+          </h3>
+          <GraficoCrecimiento datos={crecimientoMicroempresas} />
+        </div>
+
+        {/* Distribución de planes */}
+        <div style={{ backgroundColor: '#2d2d2d', padding: '25px', borderRadius: '15px', border: '1px solid #3d3d3d' }}>
+          <h3 style={{ color: '#ff9800', marginBottom: '20px', fontSize: '20px', borderBottom: '2px solid #ff9800', paddingBottom: '10px' }}>
+            📊 Distribución de Planes
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '30px' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ color: '#fff', fontSize: '14px' }}>⭐ Premium</span>
+                <span style={{ color: '#ffb74d', fontWeight: 'bold', fontSize: '16px' }}>
+                  {microsPremium.length} ({((microsPremium.length / microsActivas.length) * 100).toFixed(1)}%)
+                </span>
+              </div>
+              <div style={{ width: '100%', height: '12px', backgroundColor: '#1a1a1a', borderRadius: '6px', overflow: 'hidden' }}>
+                <div style={{ 
+                  width: `${(microsPremium.length / microsActivas.length) * 100}%`, 
+                  height: '100%', 
+                  backgroundColor: '#ffb74d',
+                  transition: 'width 0.5s ease'
+                }}></div>
+              </div>
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ color: '#fff', fontSize: '14px' }}>📦 Básico</span>
+                <span style={{ color: '#666', fontWeight: 'bold', fontSize: '16px' }}>
+                  {microsBasico.length} ({((microsBasico.length / microsActivas.length) * 100).toFixed(1)}%)
+                </span>
+              </div>
+              <div style={{ width: '100%', height: '12px', backgroundColor: '#1a1a1a', borderRadius: '6px', overflow: 'hidden' }}>
+                <div style={{ 
+                  width: `${(microsBasico.length / microsActivas.length) * 100}%`, 
+                  height: '100%', 
+                  backgroundColor: '#666',
+                  transition: 'width 0.5s ease'
+                }}></div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#1a1a1a', borderRadius: '10px', textAlign: 'center' }}>
+              <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>Ingresos Mensuales Estimados</p>
+              <p style={{ margin: '5px 0 0 0', color: '#4caf50', fontSize: '28px', fontWeight: 'bold' }}>
+                ${ingresosPremium}/mes
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Top 10 productos más vendidos */}
+      <div style={{ backgroundColor: '#2d2d2d', padding: '25px', borderRadius: '15px', border: '1px solid #3d3d3d' }}>
+        <h3 style={{ color: '#ff9800', marginBottom: '20px', fontSize: '20px', borderBottom: '2px solid #ff9800', paddingBottom: '10px' }}>
+          🏆 Top 10 Productos Más Vendidos
+        </h3>
+        
+        {top10Productos.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ fontSize: '60px', marginBottom: '15px', opacity: 0.5 }}>📦</div>
+            <p style={{ color: '#aaa', margin: 0 }}>No hay productos vendidos todavía</p>
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #ff9800' }}>
+                  <th style={{ padding: '12px', textAlign: 'left', color: '#ff9800', fontSize: '13px' }}>Posición</th>
+                  <th style={{ padding: '12px', textAlign: 'left', color: '#ff9800', fontSize: '13px' }}>Producto</th>
+                  <th style={{ padding: '12px', textAlign: 'center', color: '#ff9800', fontSize: '13px' }}>Cantidad Vendida</th>
+                  <th style={{ padding: '12px', textAlign: 'right', color: '#ff9800', fontSize: '13px' }}>Total Bs</th>
+                  <th style={{ padding: '12px', textAlign: 'right', color: '#ff9800', fontSize: '13px' }}>Progreso</th>
+                </tr>
+              </thead>
+              <tbody>
+                {top10Productos.map((producto, index) => {
+                  const maxCantidad = top10Productos[0].cantidad;
+                  const porcentaje = (producto.cantidad / maxCantidad) * 100;
+                  
+                  return (
+                    <tr key={index} style={{ borderBottom: '1px solid #3d3d3d' }}>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ 
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '30px',
+                          height: '30px',
+                          borderRadius: '50%',
+                          backgroundColor: index < 3 ? '#ffb74d' : '#3d3d3d',
+                          color: index < 3 ? '#000' : '#fff',
+                          fontWeight: 'bold',
+                          fontSize: '14px'
+                        }}>
+                          {index + 1}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px', color: '#fff', fontSize: '14px', fontWeight: index < 3 ? 'bold' : 'normal' }}>
+                        {index < 3 && <span style={{ marginRight: '5px' }}>
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                        </span>}
+                        {producto.nombre}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center', color: '#4caf50', fontSize: '14px', fontWeight: 'bold' }}>
+                        {producto.cantidad}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right', color: '#4caf50', fontSize: '14px', fontWeight: 'bold' }}>
+                        {producto.total.toFixed(2)}
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'right' }}>
+                        <div style={{ width: '100px', height: '8px', backgroundColor: '#1a1a1a', borderRadius: '4px', overflow: 'hidden', display: 'inline-block' }}>
+                          <div style={{ 
+                            width: `${porcentaje}%`, 
+                            height: '100%', 
+                            backgroundColor: index < 3 ? '#ffb74d' : '#4caf50',
+                            transition: 'width 0.5s ease'
+                          }}></div>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Componente de tarjeta de estadística para reportes
+function ReporteStatCard({ titulo, valor, icono, color, subtitulo }) {
+  return (
+    <div style={{ backgroundColor: '#2d2d2d', padding: '20px', borderRadius: '10px', border: '1px solid #3d3d3d', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+        <div style={{ flex: 1 }}>
+          <p style={{ margin: 0, color: '#aaa', fontSize: '12px', marginBottom: '8px' }}>{titulo}</p>
+          <h2 style={{ margin: 0, color, fontSize: '28px', fontWeight: 'bold' }}>{valor}</h2>
+          {subtitulo && (
+            <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '11px' }}>{subtitulo}</p>
+          )}
+        </div>
+        <div style={{ fontSize: '40px', opacity: 0.8 }}>{icono}</div>
+      </div>
+    </div>
+  );
+}
+
+// Gráfico simple de crecimiento
+function GraficoCrecimiento({ datos }) {
+  if (!datos || datos.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px' }}>
+        <p style={{ color: '#aaa' }}>No hay datos suficientes para mostrar</p>
+      </div>
+    );
+  }
+
+  const maxValor = Math.max(...datos.map(d => d.cantidad));
+
+  return (
+    <div style={{ marginTop: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '15px', height: '200px', padding: '0 10px' }}>
+        {datos.map((dato, index) => {
+          const altura = (dato.cantidad / maxValor) * 100;
+          
+          return (
+            <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <div style={{ 
+                width: '100%', 
+                height: `${altura}%`, 
+                backgroundColor: '#ff9800',
+                borderRadius: '5px 5px 0 0',
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+                paddingTop: '5px',
+                transition: 'height 0.5s ease',
+                position: 'relative'
+              }}>
+                <span style={{ color: '#000', fontSize: '12px', fontWeight: 'bold' }}>{dato.cantidad}</span>
+              </div>
+              <span style={{ color: '#aaa', fontSize: '11px', textAlign: 'center' }}>{dato.mes}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Función para calcular crecimiento por mes
+function calcularCrecimientoPorMes(microempresas) {
+  const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const ahora = new Date();
+  const resultado = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const fecha = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
+    const mesIndex = fecha.getMonth();
+    const año = fecha.getFullYear();
+
+    const cantidad = microempresas.filter(m => {
+      const fechaRegistro = new Date(m.fecha_registro);
+      return fechaRegistro.getMonth() === mesIndex && fechaRegistro.getFullYear() === año;
+    }).length;
+
+    resultado.push({
+      mes: `${meses[mesIndex]}`,
+      cantidad: cantidad
+    });
+  }
+
+  return resultado;
+}
 // Componentes auxiliares...
 function StatCard({ titulo, valor, icono, color }) {
   return (
