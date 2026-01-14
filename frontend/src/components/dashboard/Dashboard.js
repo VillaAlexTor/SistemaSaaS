@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-
+import DetalleMicroempresaModal from './DetalleMicroempresaModal';
 function Dashboard({ usuario, cerrarSesion }) {
   const [vistaActual, setVistaActual] = useState('inicio');
   const [microempresas, setMicroempresas] = useState([]);
@@ -8,6 +8,10 @@ function Dashboard({ usuario, cerrarSesion }) {
   const [cargando, setCargando] = useState(true);
   const [busquedaMicro, setBusquedaMicro] = useState('');
   const [busquedaUsuario, setBusquedaUsuario] = useState('');
+  
+  // Estados para modales
+  const [modalEditar, setModalEditar] = useState(null); // { tipo: 'micro'|'usuario', data: {} }
+  const [modalDetalle, setModalDetalle] = useState(null);
 
   useEffect(() => {
     cargarDatos();
@@ -15,70 +19,35 @@ function Dashboard({ usuario, cerrarSesion }) {
 
   const cargarDatos = async () => {
     setCargando(true);
-    
-    console.log('📊 Cargando datos del dashboard admin...');
-    
     const [resMicro, resUsuarios] = await Promise.all([
       api.getAllMicroempresas(),
       api.getAllUsuarios()
     ]);
     
-    console.log('📥 Microempresas:', resMicro);
-    console.log('📥 Usuarios:', resUsuarios);
-    
     if (resMicro.success) setMicroempresas(resMicro.data);
     if (resUsuarios.success) setUsuarios(resUsuarios.data);
-    
     setCargando(false);
   };
 
   const cambiarEstadoMicro = async (id) => {
     const micro = microempresas.find(m => m.id === id);
-    
-    console.log('🔍 Microempresa ANTES de cambiar:', micro);
-    console.log('🔍 Estado actual:', micro.activo);
-    console.log('🔍 Nuevo estado que se enviará:', !micro.activo);
-    
     const resultado = await api.updateMicroempresaEstado(id, !micro.activo);
     
-    console.log('📥 Respuesta de la API:', resultado);
-    
     if (resultado.success) {
-      console.log('✅ API respondió exitosamente');
-      console.log('📊 Microempresas ANTES de actualizar estado:', microempresas);
-      
-      // Actualizar el estado local
-      const nuevasMicros = microempresas.map(m => 
-        m.id === id ? { ...m, activo: !m.activo } : m
-      );
-      
-      console.log('📊 Microempresas DESPUÉS de actualizar estado:', nuevasMicros);
-      
-      setMicroempresas(nuevasMicros);
-      
-      if (micro.activo) {
-        alert('✅ Microempresa enviada a la papelera');
-      } else {
-        alert('✅ Microempresa reactivada correctamente');
-      }
-      
-      // Recargar datos para asegurar sincronización
+      alert(micro.activo ? '✅ Microempresa enviada a la papelera' : '✅ Microempresa reactivada');
       await cargarDatos();
     } else {
-      console.error('❌ Error en la API:', resultado);
-      alert('Error al cambiar estado de la microempresa');
+      alert('Error al cambiar estado');
     }
   };
 
   const eliminarMicroPermanente = async (id) => {
-    if (!window.confirm('⚠️ ¿Estás seguro de ELIMINAR PERMANENTEMENTE esta microempresa? Esta acción NO se puede deshacer.')) return;
+    if (!window.confirm('⚠️ ¿ELIMINAR PERMANENTEMENTE? Esta acción NO se puede deshacer.')) return;
     
     const resultado = await api.deleteMicroempresa(id);
     if (resultado.success) {
-      setMicroempresas(microempresas.filter(m => m.id !== id));
       alert('🗑️ Microempresa eliminada permanentemente');
-    } else {
-      alert('Error al eliminar la microempresa');
+      cargarDatos();
     }
   };
 
@@ -87,52 +56,37 @@ function Dashboard({ usuario, cerrarSesion }) {
     const resultado = await api.updateUsuarioEstado(id, !user.activo);
     
     if (resultado.success) {
-      setUsuarios(usuarios.map(u => 
-        u.id === id ? { ...u, activo: !u.activo } : u
-      ));
-      
-      if (user.activo) {
-        alert('✅ Usuario enviado a la papelera');
-      } else {
-        alert('✅ Usuario reactivado correctamente');
-      }
-      
+      alert(user.activo ? '✅ Usuario enviado a la papelera' : '✅ Usuario reactivado');
       cargarDatos();
-    } else {
-      alert('Error al cambiar estado del usuario');
     }
   };
 
   const eliminarUsuarioPermanente = async (id) => {
-    if (!window.confirm('⚠️ ¿Estás seguro de ELIMINAR PERMANENTEMENTE este usuario? Esta acción NO se puede deshacer.')) return;
+    if (!window.confirm('⚠️ ¿ELIMINAR PERMANENTEMENTE? Esta acción NO se puede deshacer.')) return;
     
     const resultado = await api.deleteUsuario(id);
     if (resultado.success) {
-      setUsuarios(usuarios.filter(u => u.id !== id));
       alert('🗑️ Usuario eliminado permanentemente');
-    } else {
-      alert('Error al eliminar el usuario');
+      cargarDatos();
     }
   };
 
-  // Filtrar microempresas activas e inactivas
+  // Filtros
   const microsActivas = microempresas.filter(m => m.activo);
   const microsInactivas = microempresas.filter(m => !m.activo);
-
-  // Filtrar usuarios activos e inactivos
   const usuariosActivos = usuarios.filter(u => u.activo);
   const usuariosInactivos = usuarios.filter(u => !u.activo);
 
   const microsFiltradas = microsActivas.filter(m =>
-    (m.nombre && m.nombre.toLowerCase().includes(busquedaMicro.toLowerCase())) ||
-    (m.email && m.email.toLowerCase().includes(busquedaMicro.toLowerCase())) ||
-    (m.rubro && m.rubro.toLowerCase().includes(busquedaMicro.toLowerCase()))
+    (m.nombre?.toLowerCase().includes(busquedaMicro.toLowerCase())) ||
+    (m.email?.toLowerCase().includes(busquedaMicro.toLowerCase())) ||
+    (m.rubro?.toLowerCase().includes(busquedaMicro.toLowerCase()))
   );
 
   const usuariosFiltrados = usuariosActivos.filter(u =>
-    (u.nombre && u.nombre.toLowerCase().includes(busquedaUsuario.toLowerCase())) ||
-    (u.apellido && u.apellido.toLowerCase().includes(busquedaUsuario.toLowerCase())) ||
-    (u.email && u.email.toLowerCase().includes(busquedaUsuario.toLowerCase()))
+    (u.nombre?.toLowerCase().includes(busquedaUsuario.toLowerCase())) ||
+    (u.apellido?.toLowerCase().includes(busquedaUsuario.toLowerCase())) ||
+    (u.email?.toLowerCase().includes(busquedaUsuario.toLowerCase()))
   );
 
   const stats = {
@@ -239,7 +193,6 @@ function Dashboard({ usuario, cerrarSesion }) {
               <>
                 <h2 style={{ color: '#ff9800', marginBottom: '20px', fontSize: '28px' }}>📊 Estadísticas Generales</h2>
                 
-                {/* Estadísticas principales */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
                   <StatCard titulo="Total Microempresas" valor={stats.totalMicros} icono="🏪" color="#ff9800" />
                   <StatCard titulo="Empresas Activas" valor={stats.microsActivas} icono="✅" color="#4caf50" />
@@ -251,7 +204,6 @@ function Dashboard({ usuario, cerrarSesion }) {
                   <StatCard titulo="En Papelera" valor={stats.usuariosInactivos} icono="🗑️" color="#f44336" />
                 </div>
 
-                {/* Resumen de últimos registros */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                   <InfoCard titulo="🏪 Últimas Microempresas Registradas" items={microsActivas.slice(0, 5)} tipo="micro" />
                   <InfoCard titulo="👥 Últimos Usuarios Registrados" items={usuariosActivos.slice(0, 5)} tipo="usuario" />
@@ -264,9 +216,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                 <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
                   <div>
                     <h2 style={{ color: '#ff9800', margin: '0 0 5px 0' }}>🏪 Gestión de Microempresas</h2>
-                    <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>
-                      Total: {microsActivas.length} Activas
-                    </p>
+                    <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>Total: {microsActivas.length} Activas</p>
                   </div>
                   <input
                     type="text"
@@ -300,21 +250,27 @@ function Dashboard({ usuario, cerrarSesion }) {
                             </span>
                           </td>
                           <td style={{ padding: '12px', textAlign: 'center' }}>
-                            <button 
-                              onClick={() => cambiarEstadoMicro(m.id)} 
-                              style={{ 
-                                padding: '6px 12px', 
-                                backgroundColor: '#f44336', 
-                                color: '#fff', 
-                                border: 'none', 
-                                borderRadius: '5px', 
-                                cursor: 'pointer', 
-                                fontSize: '12px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              🗑️ Enviar a Papelera
-                            </button>
+                            <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                              <button 
+                                onClick={() => setModalEditar({ tipo: 'micro', data: m })}
+                                style={{ padding: '6px 12px', backgroundColor: '#2196f3', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                              >
+                                ✏️ Editar
+                              </button>
+                              {/* ✅ AGREGAR ESTE BOTÓN */}
+                              <button 
+                                onClick={() => setModalDetalle(m.id)}
+                                style={{ padding: '6px 12px', backgroundColor: '#9c27b0', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                              >
+                                👁️ Ver Detalles
+                              </button>
+                              <button 
+                                onClick={() => cambiarEstadoMicro(m.id)}
+                                style={{ padding: '6px 12px', backgroundColor: '#f44336', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                              >
+                                🗑️ Papelera
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -323,7 +279,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                   {microsFiltradas.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '40px', color: '#aaa' }}>
                       <div style={{ fontSize: '60px', marginBottom: '15px' }}>😕</div>
-                      <p style={{ margin: 0, fontSize: '16px' }}>No se encontraron microempresas activas</p>
+                      <p style={{ margin: 0, fontSize: '16px' }}>No se encontraron microempresas</p>
                     </div>
                   )}
                 </div>
@@ -335,9 +291,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                 <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
                   <div>
                     <h2 style={{ color: '#ff9800', margin: '0 0 5px 0' }}>👥 Gestión de Usuarios</h2>
-                    <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>
-                      Total: {usuariosActivos.length} Activos
-                    </p>
+                    <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>Total: {usuariosActivos.length} Activos</p>
                   </div>
                   <input
                     type="text"
@@ -365,21 +319,20 @@ function Dashboard({ usuario, cerrarSesion }) {
                           <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{u.email}</td>
                           <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{u.telefono || 'Sin teléfono'}</td>
                           <td style={{ padding: '12px', textAlign: 'center' }}>
-                            <button 
-                              onClick={() => cambiarEstadoUsuario(u.id)} 
-                              style={{ 
-                                padding: '6px 12px', 
-                                backgroundColor: '#f44336', 
-                                color: '#fff', 
-                                border: 'none', 
-                                borderRadius: '5px', 
-                                cursor: 'pointer', 
-                                fontSize: '12px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              🗑️ Enviar a Papelera
-                            </button>
+                            <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                              <button 
+                                onClick={() => setModalEditar({ tipo: 'usuario', data: u })}
+                                style={{ padding: '6px 12px', backgroundColor: '#2196f3', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                              >
+                                ✏️ Editar
+                              </button>
+                              <button 
+                                onClick={() => cambiarEstadoUsuario(u.id)}
+                                style={{ padding: '6px 12px', backgroundColor: '#f44336', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                              >
+                                🗑️ Papelera
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -388,7 +341,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                   {usuariosFiltrados.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '40px', color: '#aaa' }}>
                       <div style={{ fontSize: '60px', marginBottom: '15px' }}>😕</div>
-                      <p style={{ margin: 0, fontSize: '16px' }}>No se encontraron usuarios activos</p>
+                      <p style={{ margin: 0, fontSize: '16px' }}>No se encontraron usuarios</p>
                     </div>
                   )}
                 </div>
@@ -397,18 +350,11 @@ function Dashboard({ usuario, cerrarSesion }) {
 
             {vistaActual === 'papelera' && (
               <>
-                <h2 style={{ color: '#f44336', marginBottom: '20px', fontSize: '28px' }}>
-                  🗑️ Papelera de Reciclaje
-                </h2>
-                <p style={{ color: '#aaa', marginBottom: '30px' }}>
-                  Aquí se encuentran los elementos desactivados. Puedes reactivarlos o eliminarlos permanentemente.
-                </p>
+                <h2 style={{ color: '#f44336', marginBottom: '20px', fontSize: '28px' }}>🗑️ Papelera de Reciclaje</h2>
+                <p style={{ color: '#aaa', marginBottom: '30px' }}>Elementos desactivados. Puedes reactivarlos o eliminarlos permanentemente.</p>
 
-                {/* Microempresas en papelera */}
                 <div style={{ marginBottom: '40px' }}>
-                  <h3 style={{ color: '#ff9800', marginBottom: '15px', fontSize: '20px' }}>
-                    🏪 Microempresas Desactivadas ({microsInactivas.length})
-                  </h3>
+                  <h3 style={{ color: '#ff9800', marginBottom: '15px', fontSize: '20px' }}>🏪 Microempresas Desactivadas ({microsInactivas.length})</h3>
                   
                   {microsInactivas.length === 0 ? (
                     <div style={{ backgroundColor: '#2d2d2d', borderRadius: '10px', padding: '40px', textAlign: 'center', border: '1px solid #3d3d3d' }}>
@@ -434,35 +380,16 @@ function Dashboard({ usuario, cerrarSesion }) {
                               <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{m.rubro || 'Sin rubro'}</td>
                               <td style={{ padding: '12px', textAlign: 'center' }}>
                                 <button 
-                                  onClick={() => cambiarEstadoMicro(m.id)} 
-                                  style={{ 
-                                    padding: '6px 12px', 
-                                    marginRight: '5px',
-                                    backgroundColor: '#4caf50', 
-                                    color: '#fff', 
-                                    border: 'none', 
-                                    borderRadius: '5px', 
-                                    cursor: 'pointer', 
-                                    fontSize: '12px',
-                                    fontWeight: 'bold'
-                                  }}
+                                  onClick={() => cambiarEstadoMicro(m.id)}
+                                  style={{ padding: '6px 12px', marginRight: '5px', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
                                 >
                                   ♻️ Reactivar
                                 </button>
                                 <button 
-                                  onClick={() => eliminarMicroPermanente(m.id)} 
-                                  style={{ 
-                                    padding: '6px 12px', 
-                                    backgroundColor: '#d32f2f', 
-                                    color: '#fff', 
-                                    border: 'none', 
-                                    borderRadius: '5px', 
-                                    cursor: 'pointer', 
-                                    fontSize: '12px',
-                                    fontWeight: 'bold'
-                                  }}
+                                  onClick={() => eliminarMicroPermanente(m.id)}
+                                  style={{ padding: '6px 12px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
                                 >
-                                  ❌ Eliminar Permanente
+                                  ❌ Eliminar
                                 </button>
                               </td>
                             </tr>
@@ -473,11 +400,8 @@ function Dashboard({ usuario, cerrarSesion }) {
                   )}
                 </div>
 
-                {/* Usuarios en papelera */}
                 <div>
-                  <h3 style={{ color: '#ff9800', marginBottom: '15px', fontSize: '20px' }}>
-                    👥 Usuarios Desactivados ({usuariosInactivos.length})
-                  </h3>
+                  <h3 style={{ color: '#ff9800', marginBottom: '15px', fontSize: '20px' }}>👥 Usuarios Desactivados ({usuariosInactivos.length})</h3>
                   
                   {usuariosInactivos.length === 0 ? (
                     <div style={{ backgroundColor: '#2d2d2d', borderRadius: '10px', padding: '40px', textAlign: 'center', border: '1px solid #3d3d3d' }}>
@@ -489,7 +413,7 @@ function Dashboard({ usuario, cerrarSesion }) {
                       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                           <tr style={{ borderBottom: '2px solid #f44336' }}>
-                            <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Nombre Completo</th>
+                            <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Nombre</th>
                             <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Email</th>
                             <th style={{ padding: '12px', textAlign: 'left', color: '#f44336', fontSize: '13px' }}>Teléfono</th>
                             <th style={{ padding: '12px', textAlign: 'center', color: '#f44336', fontSize: '13px' }}>Acciones</th>
@@ -502,36 +426,17 @@ function Dashboard({ usuario, cerrarSesion }) {
                               <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{u.email}</td>
                               <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>{u.telefono || 'Sin teléfono'}</td>
                               <td style={{ padding: '12px', textAlign: 'center' }}>
-                                <button 
-                                  onClick={() => cambiarEstadoUsuario(u.id)} 
-                                  style={{ 
-                                    padding: '6px 12px', 
-                                    marginRight: '5px',
-                                    backgroundColor: '#4caf50', 
-                                    color: '#fff', 
-                                    border: 'none', 
-                                    borderRadius: '5px', 
-                                    cursor: 'pointer', 
-                                    fontSize: '12px',
-                                    fontWeight: 'bold'
-                                  }}
+                                <button
+                                  onClick={() => cambiarEstadoUsuario(u.id)}
+                                  style={{ padding: '6px 12px', marginRight: '5px', backgroundColor: '#4caf50', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
                                 >
                                   ♻️ Reactivar
                                 </button>
-                                <button 
-                                  onClick={() => eliminarUsuarioPermanente(u.id)} 
-                                  style={{ 
-                                    padding: '6px 12px', 
-                                    backgroundColor: '#d32f2f', 
-                                    color: '#fff', 
-                                    border: 'none', 
-                                    borderRadius: '5px', 
-                                    cursor: 'pointer', 
-                                    fontSize: '12px',
-                                    fontWeight: 'bold'
-                                  }}
+                                <button
+                                  onClick={() => eliminarUsuarioPermanente(u.id)}
+                                  style={{ padding: '6px 12px', backgroundColor: '#d32f2f', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
                                 >
-                                  ❌ Eliminar Permanente
+                                  ❌ Eliminar
                                 </button>
                               </td>
                             </tr>
@@ -544,53 +449,296 @@ function Dashboard({ usuario, cerrarSesion }) {
               </>
             )}
           </>
-          )}
-  </div>
-</div>
-);
+        )}
+      </div>
+
+      {/* Modales */}
+      {modalEditar && (
+        modalEditar.tipo === 'micro' ? (
+          <EditarMicroempresaModal 
+            micro={modalEditar.data} 
+            cerrar={() => setModalEditar(null)}
+            actualizar={cargarDatos}
+          />
+        ) : (
+          <EditarUsuarioModal 
+            usuario={modalEditar.data}
+            cerrar={() => setModalEditar(null)}
+            actualizar={cargarDatos}
+          />
+        )
+      )}
+
+      {/* Modal de Detalles */}
+      {modalDetalle && (
+        <DetalleMicroempresaModal 
+          microId={modalDetalle}
+          cerrar={() => setModalDetalle(null)}
+        />
+      )}
+    </div>
+  );
 }
-// Componente de tarjeta de estadística
+
+// Componentes auxiliares...
 function StatCard({ titulo, valor, icono, color }) {
-return (
-<div style={{ backgroundColor: '#2d2d2d', padding: '20px', borderRadius: '10px', border: '1px solid #3d3d3d', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-<div>
-<p style={{ margin: 0, color: '#aaa', fontSize: '13px', marginBottom: '5px' }}>{titulo}</p>
-<h2 style={{ margin: 0, color, fontSize: '32px', fontWeight: 'bold' }}>{valor}</h2>
-</div>
-<div style={{ fontSize: '45px', opacity: 0.8 }}>{icono}</div>
-</div>
-</div>
-);
+  return (
+    <div style={{ backgroundColor: '#2d2d2d', padding: '20px', borderRadius: '10px', border: '1px solid #3d3d3d', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <p style={{ margin: 0, color: '#aaa', fontSize: '13px', marginBottom: '5px' }}>{titulo}</p>
+          <h2 style={{ margin: 0, color, fontSize: '32px', fontWeight: 'bold' }}>{valor}</h2>
+        </div>
+        <div style={{ fontSize: '45px', opacity: 0.8 }}>{icono}</div>
+      </div>
+    </div>
+  );
 }
-// Componente de tarjeta de información
+
 function InfoCard({ titulo, items, tipo }) {
-return (
-<div style={{ backgroundColor: '#2d2d2d', padding: '20px', borderRadius: '10px', border: '1px solid #3d3d3d', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-<h3 style={{ margin: '0 0 15px 0', color: '#ff9800', borderBottom: '2px solid #ff9800', paddingBottom: '10px', fontSize: '18px' }}>{titulo}</h3>
-{items.length === 0 ? (
-<div style={{ textAlign: 'center', padding: '30px' }}>
-<div style={{ fontSize: '50px', marginBottom: '10px', opacity: 0.5 }}>📭</div>
-<p style={{ color: '#aaa', margin: 0, fontSize: '14px' }}>No hay registros todavía</p>
-</div>
-) : (
-<div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto' }}>
-{items.map(item => (
-<div key={item.id} style={{ padding: '12px', backgroundColor: '#1a1a1a', borderRadius: '8px', borderLeft: '4px solid #ff9800' }}>
-<p style={{ margin: '0 0 5px 0', color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>
-{tipo === 'micro' ? item.nombre : `${item.nombre} ${item.apellido}`}
-</p>
-<p style={{ margin: 0, color: '#aaa', fontSize: '12px' }}>{item.email}</p>
-{tipo === 'micro' && item.rubro && (
-<p style={{ margin: '5px 0 0 0', color: '#ff9800', fontSize: '11px', fontWeight: 'bold' }}>
-📂 {item.rubro}
-</p>
-)}
-</div>
-))}
-</div>
-)}
-</div>
-);
+  return (
+    <div style={{ backgroundColor: '#2d2d2d', padding: '20px', borderRadius: '10px', border: '1px solid #3d3d3d', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+      <h3 style={{ margin: '0 0 15px 0', color: '#ff9800', borderBottom: '2px solid #ff9800', paddingBottom: '10px', fontSize: '18px' }}>{titulo}</h3>
+      {items.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '30px' }}>
+          <div style={{ fontSize: '50px', marginBottom: '10px', opacity: 0.5 }}>📭</div>
+          <p style={{ color: '#aaa', margin: 0, fontSize: '14px' }}>No hay registros todavía</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto' }}>
+          {items.map(item => (
+            <div key={item.id} style={{ padding: '12px', backgroundColor: '#1a1a1a', borderRadius: '8px', borderLeft: '4px solid #ff9800' }}>
+              <p style={{ margin: '0 0 5px 0', color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>
+                {tipo === 'micro' ? item.nombre : `${item.nombre} ${item.apellido}`}
+              </p>
+              <p style={{ margin: 0, color: '#aaa', fontSize: '12px' }}>{item.email}</p>
+              {tipo === 'micro' && item.rubro && (
+                <p style={{ margin: '5px 0 0 0', color: '#ff9800', fontSize: '11px', fontWeight: 'bold' }}>📂 {item.rubro}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Modal para editar microempresa
+function EditarMicroempresaModal({ micro, cerrar, actualizar }) {
+  const [datos, setDatos] = useState({
+    nombre: micro.nombre,
+    email: micro.email,
+    telefono: micro.telefono || '',
+    direccion: micro.direccion || '',
+    rubro: micro.rubro || '',
+    plan: micro.plan
+  });
+  const [guardando, setGuardando] = useState(false);
+
+  const guardar = async () => {
+    setGuardando(true);
+    const resultado = await api.updateMicroempresa(micro.id, datos);
+    if (resultado.success) {
+      alert('✅ Microempresa actualizada correctamente');
+      await actualizar();
+      cerrar();
+    } else {
+      alert(`❌ Error: ${resultado.message}`);
+    }
+    setGuardando(false);
+  };
+
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+      <div style={{ backgroundColor: '#2d2d2d', padding: '30px', borderRadius: '15px', maxWidth: '600px', width: '100%', maxHeight: '90vh', overflowY: 'auto', border: '2px solid #ff9800' }}>
+        <h2 style={{ color: '#ff9800', marginBottom: '20px' }}>✏️ Editar Microempresa</h2>
+        <div style={{ display: 'grid', gap: '15px' }}>
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Nombre *</label>
+            <input
+              type="text"
+              value={datos.nombre}
+              onChange={(e) => setDatos({ ...datos, nombre: e.target.value })}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #444', backgroundColor: '#1a1a1a', color: '#fff' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Email *</label>
+            <input
+              type="email"
+              value={datos.email}
+              onChange={(e) => setDatos({ ...datos, email: e.target.value })}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #444', backgroundColor: '#1a1a1a', color: '#fff' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Teléfono</label>
+            <input
+              type="tel"
+              value={datos.telefono}
+              onChange={(e) => setDatos({ ...datos, telefono: e.target.value })}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #444', backgroundColor: '#1a1a1a', color: '#fff' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Dirección</label>
+            <input
+              type="text"
+              value={datos.direccion}
+              onChange={(e) => setDatos({ ...datos, direccion: e.target.value })}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #444', backgroundColor: '#1a1a1a', color: '#fff' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Rubro</label>
+            <select
+              value={datos.rubro}
+              onChange={(e) => setDatos({ ...datos, rubro: e.target.value })}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #444', backgroundColor: '#1a1a1a', color: '#fff' }}
+            >
+              <option value="">Selecciona un rubro</option>
+              <option value="Abarrotes">🛒 Abarrotes</option>
+              <option value="Restaurante">🍽️ Restaurante</option>
+              <option value="Farmacia">💊 Farmacia</option>
+              <option value="Ferretería">🔨 Ferretería</option>
+              <option value="Ropa">👔 Ropa</option>
+              <option value="Tecnología">💻 Tecnología</option>
+              <option value="Servicios">🔧 Servicios</option>
+              <option value="Otro">📦 Otro</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Plan</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setDatos({ ...datos, plan: 'basico' })}
+                style={{ flex: 1, padding: '12px', backgroundColor: datos.plan === 'basico' ? '#666' : 'transparent', color: '#fff', border: '2px solid #666', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                📦 Básico
+              </button>
+              <button
+                onClick={() => setDatos({ ...datos, plan: 'premium' })}
+                style={{ flex: 1, padding: '12px', backgroundColor: datos.plan === 'premium' ? '#ffb74d' : 'transparent', color: datos.plan === 'premium' ? '#000' : '#fff', border: '2px solid #ffb74d', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                ⭐ Premium
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', marginTop: '25px' }}>
+          <button
+            onClick={cerrar}
+            disabled={guardando}
+            style={{ flex: 1, padding: '12px', backgroundColor: '#444', color: '#fff', border: 'none', borderRadius: '5px', cursor: guardando ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={guardar}
+            disabled={guardando}
+            style={{ flex: 1, padding: '12px', background: guardando ? '#666' : 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)', color: guardando ? '#aaa' : '#000', border: 'none', borderRadius: '5px', cursor: guardando ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+          >
+            {guardando ? '⏳ Guardando...' : '💾 Guardar Cambios'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Modal para editar usuario
+function EditarUsuarioModal({ usuario, cerrar, actualizar }) {
+  const [datos, setDatos] = useState({
+    nombre: usuario.nombre,
+    apellido: usuario.apellido,
+    email: usuario.email,
+    telefono: usuario.telefono || ''
+  });
+  const [guardando, setGuardando] = useState(false);
+
+  const guardar = async () => {
+    setGuardando(true);
+    const resultado = await api.updateUsuario(usuario.id, datos);
+    if (resultado.success) {
+      alert('✅ Usuario actualizado correctamente');
+      await actualizar();
+      cerrar();
+    } else {
+      alert(`❌ Error: ${resultado.message}`);
+    }
+    setGuardando(false);
+  };
+
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+      <div style={{ backgroundColor: '#2d2d2d', padding: '30px', borderRadius: '15px', maxWidth: '600px', width: '100%', border: '2px solid #ff9800' }}>
+        <h2 style={{ color: '#ff9800', marginBottom: '20px' }}>✏️ Editar Usuario</h2>
+        <div style={{ display: 'grid', gap: '15px' }}>
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Nombre *</label>
+            <input
+              type="text"
+              value={datos.nombre}
+              onChange={(e) => setDatos({ ...datos, nombre: e.target.value })}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #444', backgroundColor: '#1a1a1a', color: '#fff' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Apellido *</label>
+            <input
+              type="text"
+              value={datos.apellido}
+              onChange={(e) => setDatos({ ...datos, apellido: e.target.value })}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #444', backgroundColor: '#1a1a1a', color: '#fff' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Email *</label>
+            <input
+              type="email"
+              value={datos.email}
+              onChange={(e) => setDatos({ ...datos, email: e.target.value })}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #444', backgroundColor: '#1a1a1a', color: '#fff' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>Teléfono</label>
+            <input
+              type="tel"
+              value={datos.telefono}
+              onChange={(e) => setDatos({ ...datos, telefono: e.target.value })}
+              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '2px solid #444', backgroundColor: '#1a1a1a', color: '#fff' }}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', marginTop: '25px' }}>
+          <button
+            onClick={cerrar}
+            disabled={guardando}
+            style={{ flex: 1, padding: '12px', backgroundColor: '#444', color: '#fff', border: 'none', borderRadius: '5px', cursor: guardando ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={guardar}
+            disabled={guardando}
+            style={{ flex: 1, padding: '12px', background: guardando ? '#666' : 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)', color: guardando ? '#aaa' : '#000', border: 'none', borderRadius: '5px', cursor: guardando ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+          >
+            {guardando ? '⏳ Guardando...' : '💾 Guardar Cambios'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 export default Dashboard;
