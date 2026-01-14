@@ -2,10 +2,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password  
 from usuarios.models import Usuario
 from microempresas.models import Microempresa
 from .email_utils import generar_token, enviar_email_recuperacion, validar_token
-import bcrypt
 
 @api_view(['POST'])
 def solicitar_recuperacion(request):
@@ -95,9 +95,8 @@ def restablecer_password(request):
                 'message': 'El token ha expirado. Solicita uno nuevo.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Encriptar la nueva contraseña
-        hashed = bcrypt.hashpw(nueva_password.encode('utf-8'), bcrypt.gensalt())
-        user.password = hashed.decode('utf-8')
+        # ✅ CORRECCIÓN: Usar make_password() en lugar de bcrypt
+        user.password = make_password(nueva_password)
         
         # Limpiar el token
         user.reset_password_token = None
