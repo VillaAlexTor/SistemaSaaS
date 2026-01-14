@@ -559,4 +559,55 @@ export const api = {
       return { success: false, message: 'Error de conexión' };
     }
   },
+  // ==================== GESTIÓN DE PLANES ====================
+
+  // Obtener todos los planes
+  getPlanes: async () => {
+    try {
+      const response = await fetch(`${API_URL}/planes/`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener planes:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Actualizar un plan
+  updatePlan: async (id, datos) => {
+    try {
+      const response = await fetch(`${API_URL}/planes/${id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al actualizar plan', errors: result };
+      }
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Crear un nuevo plan
+  createPlan: async (datos) => {
+    try {
+      const response = await fetch(`${API_URL}/planes/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al crear plan', errors: result };
+      }
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
 };

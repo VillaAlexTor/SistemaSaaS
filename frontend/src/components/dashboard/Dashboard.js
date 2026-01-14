@@ -137,7 +137,8 @@ function Dashboard({ usuario, cerrarSesion }) {
             { id: 'inicio', icono: '🏠', texto: 'Inicio' },
             { id: 'microempresas', icono: '🏪', texto: 'Microempresas' },
             { id: 'usuarios', icono: '👥', texto: 'Usuarios' },
-            { id: 'reportes', icono: '📊', texto: 'Reportes' },  // ✅ NUEVA VISTA
+            { id: 'reportes', icono: '📊', texto: 'Reportes' },
+            { id: 'planes', icono: '💎', texto: 'Planes' },  
             { id: 'papelera', icono: '🗑️', texto: 'Papelera', badge: microsInactivas.length + usuariosInactivos.length }
           ].map(item => (
             <button
@@ -350,7 +351,10 @@ function Dashboard({ usuario, cerrarSesion }) {
             )}
             {vistaActual === 'reportes' && (
               <VistaReportes microempresas={microempresas} usuarios={usuarios} />
-            )}
+            )},
+            {vistaActual === 'planes' && (
+              <VistaPlanes microempresas={microempresas} />
+            )},
             {vistaActual === 'papelera' && (
               <>
                 <h2 style={{ color: '#f44336', marginBottom: '20px', fontSize: '28px' }}>🗑️ Papelera de Reciclaje</h2>
@@ -759,7 +763,557 @@ function VistaReportes({ microempresas, usuarios }) {
     </div>
   );
 }
+// ============================================
+// COMPONENTE DE GESTIÓN DE PLANES
+// ============================================
 
+function VistaPlanes({ microempresas }) {
+  const [planes, setPlanes] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [modalEditar, setModalEditar] = useState(null);
+
+  useEffect(() => {
+    cargarPlanes();
+  }, []);
+
+  const cargarPlanes = async () => {
+    setCargando(true);
+    const resultado = await api.getPlanes();
+    
+    if (resultado.success) {
+      setPlanes(resultado.data);
+    }
+    
+    setCargando(false);
+  };
+
+  if (cargando) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px' }}>
+        <div style={{ fontSize: '60px', marginBottom: '20px' }}>⏳</div>
+        <p style={{ color: '#ff9800', fontSize: '18px' }}>Cargando planes...</p>
+      </div>
+    );
+  }
+
+  const microsActivas = microempresas.filter(m => m.activo);
+  const microsPorPlan = {};
+  
+  microsActivas.forEach(m => {
+    const plan = m.plan || 'basico';
+    microsPorPlan[plan] = (microsPorPlan[plan] || 0) + 1;
+  });
+
+  return (
+    <div>
+      <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h2 style={{ color: '#ff9800', margin: '0 0 5px 0', fontSize: '28px' }}>💎 Gestión de Planes</h2>
+          <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>Administra los planes de suscripción del sistema</p>
+        </div>
+      </div>
+
+      {/* Tarjetas de planes */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '25px', marginBottom: '40px' }}>
+        {/* Plan Básico */}
+        <TarjetaPlan
+          plan={{
+            id: 1,
+            nombre: 'Básico',
+            descripcion: 'Plan gratuito para comenzar',
+            precio_mensual: 0,
+            max_productos: 50,
+            max_usuarios: 2,
+            tiene_reportes: false,
+            tiene_api: false,
+            icono: '📦',
+            color: '#666'
+          }}
+          cantidadEmpresas={microsPorPlan['basico'] || 0}
+          onEditar={setModalEditar}
+        />
+
+        {/* Plan Premium */}
+        <TarjetaPlan
+          plan={{
+            id: 2,
+            nombre: 'Premium',
+            descripcion: 'Plan completo con todas las funciones',
+            precio_mensual: 29,
+            max_productos: 999999,
+            max_usuarios: 10,
+            tiene_reportes: true,
+            tiene_api: true,
+            icono: '⭐',
+            color: '#ffb74d'
+          }}
+          cantidadEmpresas={microsPorPlan['premium'] || 0}
+          onEditar={setModalEditar}
+        />
+      </div>
+
+      {/* Estadísticas de planes */}
+      <div style={{ backgroundColor: '#2d2d2d', padding: '25px', borderRadius: '15px', border: '1px solid #3d3d3d' }}>
+        <h3 style={{ color: '#ff9800', marginBottom: '20px', fontSize: '20px', borderBottom: '2px solid #ff9800', paddingBottom: '10px' }}>
+          📊 Estadísticas de Planes
+        </h3>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+          <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#1a1a1a', borderRadius: '10px' }}>
+            <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>Total Empresas Activas</p>
+            <p style={{ margin: '10px 0 0 0', color: '#ff9800', fontSize: '32px', fontWeight: 'bold' }}>
+              {microsActivas.length}
+            </p>
+          </div>
+
+          <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#1a1a1a', borderRadius: '10px' }}>
+            <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>Tasa de Conversión a Premium</p>
+            <p style={{ margin: '10px 0 0 0', color: '#4caf50', fontSize: '32px', fontWeight: 'bold' }}>
+              {microsActivas.length > 0 
+                ? ((microsPorPlan['premium'] || 0) / microsActivas.length * 100).toFixed(1)
+                : 0}%
+            </p>
+          </div>
+
+          <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#1a1a1a', borderRadius: '10px' }}>
+            <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>Ingresos Mensuales Estimados</p>
+            <p style={{ margin: '10px 0 0 0', color: '#4caf50', fontSize: '32px', fontWeight: 'bold' }}>
+              ${(microsPorPlan['premium'] || 0) * 29}
+            </p>
+          </div>
+        </div>
+
+        {/* Gráfico de distribución */}
+        <div style={{ marginTop: '30px' }}>
+          <p style={{ margin: '0 0 15px 0', color: '#fff', fontSize: '15px', fontWeight: 'bold' }}>
+            Distribución de Planes
+          </p>
+          <div style={{ display: 'flex', gap: '10px', height: '40px' }}>
+            {microsActivas.length > 0 && (
+              <>
+                <div 
+                  style={{ 
+                    flex: microsPorPlan['basico'] || 0,
+                    backgroundColor: '#666',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '14px'
+                  }}
+                >
+                  {microsPorPlan['basico'] || 0}
+                </div>
+                <div 
+                  style={{ 
+                    flex: microsPorPlan['premium'] || 0,
+                    backgroundColor: '#ffb74d',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#000',
+                    fontWeight: 'bold',
+                    fontSize: '14px'
+                  }}
+                >
+                  {microsPorPlan['premium'] || 0}
+                </div>
+              </>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: '20px', marginTop: '10px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '12px', height: '12px', backgroundColor: '#666', borderRadius: '3px' }}></div>
+              <span style={{ color: '#aaa', fontSize: '13px' }}>Básico</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '12px', height: '12px', backgroundColor: '#ffb74d', borderRadius: '3px' }}></div>
+              <span style={{ color: '#aaa', fontSize: '13px' }}>Premium</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal de edición */}
+      {modalEditar && (
+        <ModalEditarPlan 
+          plan={modalEditar}
+          cerrar={() => setModalEditar(null)}
+          actualizar={cargarPlanes}
+        />
+      )}
+    </div>
+  );
+}
+
+// Componente de tarjeta de plan
+function TarjetaPlan({ plan, cantidadEmpresas, onEditar }) {
+  return (
+    <div style={{ 
+      backgroundColor: '#2d2d2d', 
+      borderRadius: '15px', 
+      padding: '30px',
+      border: `2px solid ${plan.color}`,
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Decoración de fondo */}
+      <div style={{
+        position: 'absolute',
+        top: '-50px',
+        right: '-50px',
+        width: '150px',
+        height: '150px',
+        backgroundColor: plan.color,
+        opacity: 0.1,
+        borderRadius: '50%'
+      }}></div>
+
+      {/* Contenido */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+          <div>
+            <div style={{ fontSize: '40px', marginBottom: '10px' }}>{plan.icono}</div>
+            <h3 style={{ margin: 0, color: plan.color, fontSize: '24px', fontWeight: 'bold' }}>
+              {plan.nombre}
+            </h3>
+            <p style={{ margin: '5px 0 0 0', color: '#aaa', fontSize: '13px' }}>
+              {plan.descripcion}
+            </p>
+          </div>
+          <button
+            onClick={() => onEditar(plan)}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#2196f3',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}
+          >
+            ✏️ Editar
+          </button>
+        </div>
+
+        {/* Precio */}
+        <div style={{ marginBottom: '25px' }}>
+          <span style={{ color: plan.color, fontSize: '48px', fontWeight: 'bold' }}>
+            ${plan.precio_mensual}
+          </span>
+          <span style={{ color: '#aaa', fontSize: '16px' }}>/mes</span>
+        </div>
+
+        {/* Características */}
+        <div style={{ marginBottom: '20px' }}>
+          <CaracteristicaPlan 
+            texto={`Hasta ${plan.max_productos === 999999 ? '∞' : plan.max_productos} productos`}
+            activo={true}
+          />
+          <CaracteristicaPlan 
+            texto={`${plan.max_usuarios} usuarios internos`}
+            activo={true}
+          />
+          <CaracteristicaPlan 
+            texto="Reportes avanzados"
+            activo={plan.tiene_reportes}
+          />
+          <CaracteristicaPlan 
+            texto="Acceso a API"
+            activo={plan.tiene_api}
+          />
+        </div>
+
+        {/* Empresas suscritas */}
+        <div style={{ 
+          padding: '15px', 
+          backgroundColor: '#1a1a1a', 
+          borderRadius: '10px',
+          textAlign: 'center'
+        }}>
+          <p style={{ margin: 0, color: '#aaa', fontSize: '12px' }}>Empresas Suscritas</p>
+          <p style={{ margin: '5px 0 0 0', color: plan.color, fontSize: '28px', fontWeight: 'bold' }}>
+            {cantidadEmpresas}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Componente de característica de plan
+function CaracteristicaPlan({ texto, activo }) {
+  return (
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '10px',
+      marginBottom: '12px'
+    }}>
+      <div style={{ 
+        width: '20px', 
+        height: '20px', 
+        borderRadius: '50%',
+        backgroundColor: activo ? '#4caf50' : '#666',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '12px'
+      }}>
+        {activo ? '✓' : '✗'}
+      </div>
+      <span style={{ 
+        color: activo ? '#fff' : '#666',
+        fontSize: '14px'
+      }}>
+        {texto}
+      </span>
+    </div>
+  );
+}
+
+// Modal para editar plan
+function ModalEditarPlan({ plan, cerrar, actualizar }) {
+  const [datos, setDatos] = useState({
+    nombre: plan.nombre,
+    descripcion: plan.descripcion,
+    precio_mensual: plan.precio_mensual,
+    max_productos: plan.max_productos,
+    max_usuarios: plan.max_usuarios,
+    tiene_reportes: plan.tiene_reportes,
+    tiene_api: plan.tiene_api
+  });
+  const [guardando, setGuardando] = useState(false);
+
+  const guardar = async () => {
+    setGuardando(true);
+    const resultado = await api.updatePlan(plan.id, datos);
+    
+    if (resultado.success) {
+      alert('✅ Plan actualizado correctamente');
+      actualizar();
+      cerrar();
+    } else {
+      alert(`❌ Error: ${resultado.message}`);
+    }
+    
+    setGuardando(false);
+  };
+
+  return (
+    <div style={{ 
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      right: 0, 
+      bottom: 0, 
+      backgroundColor: 'rgba(0,0,0,0.9)', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      zIndex: 1000, 
+      padding: '20px' 
+    }}>
+      <div style={{ 
+        backgroundColor: '#2d2d2d', 
+        padding: '30px', 
+        borderRadius: '15px', 
+        maxWidth: '600px', 
+        width: '100%', 
+        maxHeight: '90vh', 
+        overflowY: 'auto', 
+        border: '2px solid #ff9800' 
+      }}>
+        <h2 style={{ color: '#ff9800', marginBottom: '20px' }}>
+          ✏️ Editar Plan: {plan.nombre}
+        </h2>
+        
+        <div style={{ display: 'grid', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
+              Nombre del Plan *
+            </label>
+            <input
+              type="text"
+              value={datos.nombre}
+              onChange={(e) => setDatos({ ...datos, nombre: e.target.value })}
+              style={{ 
+                width: '100%', 
+                padding: '10px', 
+                borderRadius: '5px', 
+                border: '2px solid #444', 
+                backgroundColor: '#1a1a1a', 
+                color: '#fff' 
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
+              Descripción
+            </label>
+            <textarea
+              value={datos.descripcion}
+              onChange={(e) => setDatos({ ...datos, descripcion: e.target.value })}
+              rows="3"
+              style={{ 
+                width: '100%', 
+                padding: '10px', 
+                borderRadius: '5px', 
+                border: '2px solid #444', 
+                backgroundColor: '#1a1a1a', 
+                color: '#fff',
+                fontFamily: 'inherit',
+                resize: 'vertical'
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <div>
+              <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
+                Precio Mensual ($)
+              </label>
+              <input
+                type="number"
+                value={datos.precio_mensual}
+                onChange={(e) => setDatos({ ...datos, precio_mensual: parseFloat(e.target.value) })}
+                min="0"
+                step="0.01"
+                style={{ 
+                  width: '100%', 
+                  padding: '10px', 
+                  borderRadius: '5px', 
+                  border: '2px solid #444', 
+                  backgroundColor: '#1a1a1a', 
+                  color: '#fff' 
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
+                Máx. Productos
+              </label>
+              <input
+                type="number"
+                value={datos.max_productos}
+                onChange={(e) => setDatos({ ...datos, max_productos: parseInt(e.target.value) })}
+                min="1"
+                style={{ 
+                  width: '100%', 
+                  padding: '10px', 
+                  borderRadius: '5px', 
+                  border: '2px solid #444', 
+                  backgroundColor: '#1a1a1a', 
+                  color: '#fff' 
+                }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
+              Máx. Usuarios Internos
+            </label>
+            <input
+              type="number"
+              value={datos.max_usuarios}
+              onChange={(e) => setDatos({ ...datos, max_usuarios: parseInt(e.target.value) })}
+              min="1"
+              style={{ 
+                width: '100%', 
+                padding: '10px', 
+                borderRadius: '5px', 
+                border: '2px solid #444', 
+                backgroundColor: '#1a1a1a', 
+                color: '#fff' 
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px',
+              padding: '12px',
+              backgroundColor: '#1a1a1a',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}>
+              <input
+                type="checkbox"
+                checked={datos.tiene_reportes}
+                onChange={(e) => setDatos({ ...datos, tiene_reportes: e.target.checked })}
+                style={{ cursor: 'pointer' }}
+              />
+              <span style={{ color: '#fff', fontSize: '14px' }}>Incluye Reportes Avanzados</span>
+            </label>
+
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px',
+              padding: '12px',
+              backgroundColor: '#1a1a1a',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}>
+              <input
+                type="checkbox"
+                checked={datos.tiene_api}
+                onChange={(e) => setDatos({ ...datos, tiene_api: e.target.checked })}
+                style={{ cursor: 'pointer' }}
+              />
+              <span style={{ color: '#fff', fontSize: '14px' }}>Acceso a API</span>
+            </label>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', marginTop: '25px' }}>
+          <button
+            onClick={cerrar}
+            disabled={guardando}
+            style={{ 
+              flex: 1, 
+              padding: '12px', 
+              backgroundColor: '#444', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: '5px', 
+              cursor: guardando ? 'not-allowed' : 'pointer', 
+              fontWeight: 'bold' 
+            }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={guardar}
+            disabled={guardando}
+            style={{ 
+              flex: 1, 
+              padding: '12px', 
+              background: guardando ? '#666' : 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)', 
+              color: guardando ? '#aaa' : '#000', 
+              border: 'none', 
+              borderRadius: '5px', 
+              cursor: guardando ? 'not-allowed' : 'pointer', 
+              fontWeight: 'bold' 
+            }}
+          >
+            {guardando ? '⏳ Guardando...' : '💾 Guardar Cambios'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 // Componente de tarjeta de estadística para reportes
 function ReporteStatCard({ titulo, valor, icono, color, subtitulo }) {
   return (
