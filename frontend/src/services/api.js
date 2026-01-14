@@ -392,5 +392,30 @@ export const api = {
       console.error('Error al obtener clientes:', error);
       return { success: false, message: 'Error de conexión' };
     }
+  },
+  async solicitarRecuperacion(email, tipo) {
+    try {
+      const response = await fetch(`${API_URL}/password/solicitar/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, tipo })
+      });
+      return await response.json();
+    } catch (error) {
+      return { success: false, message: 'Error al conectar con el servidor' };
+    }
+  },
+
+  async restablecerPassword(token, tipo, nueva_password) {
+    try {
+      const response = await fetch(`${API_URL}/password/restablecer/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, tipo, nueva_password })
+      });
+      return await response.json();
+    } catch (error) {
+      return { success: false, message: 'Error al conectar con el servidor' };
+    }
   }
 };

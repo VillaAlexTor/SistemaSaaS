@@ -20,6 +20,12 @@ class Microempresa(models.Model):
     descripcion = models.TextField(blank=True, null=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     
+    reset_password_token = models.CharField(max_length=100, blank=True, null=True)
+    reset_password_token_created = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.nombre
+    
     class Meta:
         db_table = 'microempresas'
         verbose_name = 'Microempresa'

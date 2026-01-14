@@ -10,6 +10,12 @@ class Usuario(models.Model):
     activo = models.BooleanField(default=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     
+    reset_password_token = models.CharField(max_length=100, blank=True, null=True)
+    reset_password_token_created = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nombre} {self.apellido}"
+        
     class Meta:
         db_table = 'usuarios'
         verbose_name = 'Usuario'

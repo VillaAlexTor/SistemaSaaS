@@ -5,6 +5,7 @@ from authentication.views import AdministradorViewSet, UsuarioInternoViewSet, No
 from microempresas.views import MicroempresaViewSet, ClienteViewSet, ProveedorViewSet, CompraViewSet, VentaViewSet, PlanViewSet
 from productos.views import CategoriaViewSet, ProductoViewSet, InventarioMovimientoViewSet
 from usuarios.views import UsuarioViewSet
+from .views import solicitar_recuperacion, restablecer_password 
 
 # Router para la API REST
 router = DefaultRouter()
@@ -34,4 +35,6 @@ router.register(r'usuarios', UsuarioViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/password/solicitar/', solicitar_recuperacion, name='solicitar_recuperacion'),  # ✅ Recuperación
+    path('api/password/restablecer/', restablecer_password, name='restablecer_password'),  # ✅ Restablecer
 ]

@@ -1,12 +1,20 @@
 # backend/sistema_ventas_api/settings.py
 import os
 from pathlib import Path
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'tu-clave-secreta-aqui-cambiarla-en-produccion'
 DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+BASE_DIR = Path(__file__).resolve().parent.parent
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG')
 # Aplicaciones instaladas
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -129,5 +137,19 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
-RECAPTCHA_PUBLIC_KEY = '6LfT-UksAAAAAHhvNIhafMGE_Tf3tBtYQNY7Vv6P'  # Tu Site Key
-RECAPTCHA_PRIVATE_KEY = '6LfT-UksAAAAAEourVXJG3OCpUidY9TqPNesmISW'  # Tu Secret Key
+# ==========================================
+# CONFIGURACIÓN DE EMAIL (Gmail)
+# ==========================================
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER')
+
+# ==========================================
+# CONFIGURACIÓN DE RECAPTCHA
+# ==========================================
+RECAPTCHA_PUBLIC_KEY = env('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = env('RECAPTCHA_PRIVATE_KEY')
