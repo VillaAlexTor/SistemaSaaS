@@ -171,29 +171,6 @@ function LoginUnificado({ cambiarVista, onLogin }) {
             </div>
           </div>
 
-          {/* Usuario de prueba */}
-          <div style={{
-            backgroundColor: '#1a1a1a',
-            padding: '15px',
-            borderRadius: '5px',
-            marginBottom: '20px',
-            border: '1px solid #444',
-            fontSize: '12px'
-          }}>
-            <p style={{ margin: 0, color: '#ff9800', fontWeight: 'bold', marginBottom: '10px' }}>
-              🧪 Usuario de Prueba Registrado:
-            </p>
-            
-            <div style={{ paddingLeft: '10px', borderLeft: '3px solid #ff9800' }}>
-              <p style={{ margin: 0, color: '#ff9800', fontWeight: 'bold', fontSize: '11px' }}>
-                🛒 USUARIO
-              </p>
-              <p style={{ margin: 0, color: '#aaa' }}>
-                📧 <strong style={{ color: '#fff' }}>alejandro@gmail.com</strong> / 🔒 123456
-              </p>
-            </div>
-          </div>
-
           {/* Botón Ingresar */}
           <button
             type="submit"
