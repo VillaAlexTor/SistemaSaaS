@@ -5,6 +5,8 @@ from .serializers import (
     MicroempresaSerializer, ClienteSerializer, ProveedorSerializer,
     CompraSerializer, VentaSerializer, PlanSerializer
 )
+from rest_framework.decorators import action
+from django.contrib.auth.hashers import check_password, make_password
 from sistema_ventas_api.utils import verify_recaptcha
 class MicroempresaViewSet(viewsets.ModelViewSet):
     queryset = Microempresa.objects.all()
@@ -28,7 +30,36 @@ class MicroempresaViewSet(viewsets.ModelViewSet):
         
         # Si el captcha es válido, continuar con el registro normal
         return super().create(request, *args, **kwargs)
-
+    @action(detail=True, methods=['post'])
+    def cambiar_password(self, request, pk=None):
+        """
+        Endpoint para cambiar la contraseña de una microempresa
+        """
+        microempresa = self.get_object()
+        password_actual = request.data.get('password_actual')
+        nueva_password = request.data.get('nueva_password')
+        
+        if not password_actual or not nueva_password:
+            return Response({
+                'success': False,
+                'message': 'Se requiere la contraseña actual y la nueva'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verificar que la contraseña actual sea correcta
+        if not check_password(password_actual, microempresa.password):
+            return Response({
+                'success': False,
+                'message': 'La contraseña actual es incorrecta'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Actualizar la contraseña
+        microempresa.password = make_password(nueva_password)
+        microempresa.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Contraseña actualizada correctamente'
+        })
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer

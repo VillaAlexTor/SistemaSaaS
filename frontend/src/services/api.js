@@ -610,4 +610,95 @@ export const api = {
       return { success: false, message: 'Error de conexión' };
     }
   },
+  // ==================== CONFIGURACIÓN DE MICROEMPRESA ====================
+
+  // Obtener información completa de la microempresa
+  getMicroempresaInfo: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/microempresas/${id}/`);
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al obtener información' };
+      }
+    } catch (error) {
+      console.error('Error al obtener info de microempresa:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Actualizar configuración de microempresa
+  updateConfiguracionMicroempresa: async (id, datos) => {
+    try {
+      const response = await fetch(`${API_URL}/microempresas/${id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al actualizar', errors: result };
+      }
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Cambiar contraseña de microempresa
+  cambiarPasswordMicroempresa: async (id, passwordActual, nuevaPassword) => {
+    try {
+      const response = await fetch(`${API_URL}/microempresas/${id}/cambiar-password/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          password_actual: passwordActual,
+          nueva_password: nuevaPassword
+        })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Solicitar cambio de plan
+  solicitarCambioPlan: async (microempresaId, planDestino) => {
+    try {
+      const response = await fetch(`${API_URL}/microempresas/${microempresaId}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: planDestino })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al cambiar plan' };
+      }
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+  // Cancelar suscripción Premium (bajar a plan básico) 
+  cancelarSuscripcion: async (microempresaId) => {
+    try {
+      const response = await fetch(`${API_URL}/microempresas/${microempresaId}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: 'basico' })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al cancelar suscripción' };
+      }
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
 };

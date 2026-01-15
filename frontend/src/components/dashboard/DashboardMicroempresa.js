@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ConfiguracionEmpresa from './ConfiguracionEmpresa';
 import { api } from '../../services/api';
 
 function DashboardMicroempresa({ usuario, cerrarSesion }) {
@@ -6,6 +7,7 @@ function DashboardMicroempresa({ usuario, cerrarSesion }) {
   const [productos, setProductos] = useState([]);
   const [ventas, setVentas] = useState([]);
   const [clientes, setClientes] = useState([]);
+  const [mostrarConfiguracion, setMostrarConfiguracion] = useState(false);
   const [estadisticas, setEstadisticas] = useState({
     totalVentas: 0,
     totalProductos: 0,
@@ -85,6 +87,22 @@ function DashboardMicroempresa({ usuario, cerrarSesion }) {
               </p>
             </div>
           </div>
+          <button
+            onClick={() => setMostrarConfiguracion(true)}
+            style={{
+              padding: '10px 25px',
+              backgroundColor: '#2196f3',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 10px rgba(33,150,243,0.3)',
+              marginRight: '10px'
+            }}
+          >
+            ⚙️ Configuración
+          </button>
           <button
             onClick={cerrarSesion}
             style={{
@@ -305,6 +323,23 @@ function DashboardMicroempresa({ usuario, cerrarSesion }) {
                 </button>
               </div>
             )}
+            {/* Modal de configuración */}
+              {mostrarConfiguracion && (
+                <ConfiguracionEmpresa 
+                  usuario={usuario}
+                  cerrar={() => setMostrarConfiguracion(false)}
+                  onActualizar={(nuevosDatos) => {
+                    console.log('✅ Datos actualizados:', nuevosDatos);
+                    
+                    // Actualizar el localStorage con los nuevos datos
+                    const usuarioActualizado = { ...usuario, ...nuevosDatos };
+                    localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+                    
+                    // Forzar recarga de la página para reflejar cambios
+                    window.location.reload();
+                  }}
+                />
+              )}
           </>
         )}
       </div>
