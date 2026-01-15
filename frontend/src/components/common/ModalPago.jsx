@@ -194,7 +194,7 @@ function ModalPago({ cerrar, onPagoExitoso, monto = 120 }) {
                 fontSize: '120px'
               }}>
                 <img 
-                  src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Pago-Premium-Bs120" 
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Pago-Premium-$29" 
                   alt="QR Code"
                   style={{ width: '100%', height: '100%', borderRadius: '10px' }}
                 />
@@ -215,7 +215,7 @@ function ModalPago({ cerrar, onPagoExitoso, monto = 120 }) {
               </div>
 
               <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>
-                Monto a pagar: <strong style={{ color: '#ff9800', fontSize: '18px' }}>Bs {monto}</strong>
+                Monto a pagar: <strong style={{ color: '#ff9800', fontSize: '18px' }}>$ {monto}</strong>
               </p>
               <p style={{ margin: '10px 0 0 0', color: '#666', fontSize: '12px' }}>
                 Después de realizar el pago, haz clic en "Confirmar Pago"
