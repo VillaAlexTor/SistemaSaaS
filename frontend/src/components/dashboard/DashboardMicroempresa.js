@@ -8,6 +8,7 @@ function DashboardMicroempresa({ usuario, cerrarSesion }) {
   const [ventas, setVentas] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [mostrarConfiguracion, setMostrarConfiguracion] = useState(false);
+  const [datosEmpresa, setDatosEmpresa] = useState(usuario); 
   const [estadisticas, setEstadisticas] = useState({
     totalVentas: 0,
     totalProductos: 0,
@@ -17,6 +18,7 @@ function DashboardMicroempresa({ usuario, cerrarSesion }) {
 
   useEffect(() => {
     cargarDatos();
+    cargarDatosCompletos(); 
   }, []);
 
   const cargarDatos = async () => {
@@ -57,7 +59,18 @@ function DashboardMicroempresa({ usuario, cerrarSesion }) {
 
     setCargando(false);
   };
-
+  const cargarDatosCompletos = async () => {
+    const resultado = await api.getMicroempresaInfo(usuario.id);
+    
+    if (resultado.success) {
+      console.log('📋 Datos completos de la empresa:', resultado.data);
+      setDatosEmpresa(resultado.data);
+      
+      // Actualizar también el localStorage con los datos completos
+      const usuarioActualizado = { ...usuario, ...resultado.data };
+      localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+    }
+  };
   // Obtener las últimas 5 ventas
   const ventasRecientes = ventas.slice(0, 5);
 
@@ -326,16 +339,12 @@ function DashboardMicroempresa({ usuario, cerrarSesion }) {
             {/* Modal de configuración */}
               {mostrarConfiguracion && (
                 <ConfiguracionEmpresa 
-                  usuario={usuario}
+                  usuario={datosEmpresa} 
                   cerrar={() => setMostrarConfiguracion(false)}
                   onActualizar={(nuevosDatos) => {
                     console.log('✅ Datos actualizados:', nuevosDatos);
-                    
-                    // Actualizar el localStorage con los nuevos datos
                     const usuarioActualizado = { ...usuario, ...nuevosDatos };
                     localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
-                    
-                    // Forzar recarga de la página para reflejar cambios
                     window.location.reload();
                   }}
                 />

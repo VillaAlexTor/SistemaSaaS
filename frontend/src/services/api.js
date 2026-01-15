@@ -631,18 +631,26 @@ export const api = {
   // Actualizar configuración de microempresa
   updateConfiguracionMicroempresa: async (id, datos) => {
     try {
+      console.log(' Enviando PATCH a:', `${API_URL}/microempresas/${id}/`);
+      console.log(' Datos a enviar:', datos);
       const response = await fetch(`${API_URL}/microempresas/${id}/`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datos)
       });
+      
       const result = await response.json();
+      
+      console.log(' Respuesta del servidor:', result);
+      console.log(' Status:', response.status);
+      
       if (response.ok) {
         return { success: true, data: result };
       } else {
         return { success: false, message: 'Error al actualizar', errors: result };
       }
     } catch (error) {
+      console.error(' Error de conexión:', error);
       return { success: false, message: 'Error de conexión' };
     }
   },

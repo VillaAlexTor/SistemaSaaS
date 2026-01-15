@@ -21,22 +21,28 @@ function ConfiguracionEmpresa({ usuario, cerrar, onActualizar }) {
   const guardarCambiosGenerales = async () => {
     setCargando(true);
     setMensaje(null);
-
+    console.log('📤 Enviando datos:', datosGenerales);
+    console.log('🆔 ID de empresa:', usuario.id);
     const resultado = await api.updateConfiguracionMicroempresa(usuario.id, datosGenerales);
-
+    console.log('📥 Respuesta del servidor:', resultado);
     if (resultado.success) {
       setMensaje({ tipo: 'exito', texto: '✅ Cambios guardados correctamente' });
-      
-      // Actualizar el usuario en el componente padre
       if (onActualizar) {
         onActualizar({ ...usuario, ...datosGenerales });
       }
-
-      setTimeout(() => setMensaje(null), 3000);
+      setTimeout(() => {
+        setMensaje(null);
+      }, 2000);
     } else {
-      setMensaje({ tipo: 'error', texto: '❌ Error al guardar cambios' });
+      const mensajeError = resultado.errors 
+        ? JSON.stringify(resultado.errors) 
+        : resultado.message || 'Error desconocido';
+      setMensaje({ 
+        tipo: 'error', 
+        texto: `❌ Error: ${mensajeError}` 
+      });
+      console.error('❌ Error completo:', resultado);
     }
-
     setCargando(false);
   };
 
