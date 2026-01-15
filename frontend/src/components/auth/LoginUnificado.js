@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
+import SimpleCaptcha from '../common/SimpleCaptcha';
 
 // Login Unificado - Conectado a la API real de Django
 function LoginUnificado({ cambiarVista, onLogin }) {
@@ -8,15 +9,22 @@ function LoginUnificado({ cambiarVista, onLogin }) {
   const [verPassword, setVerPassword] = useState(false);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [captchaValido, setCaptchaValido] = useState(false);
 
   // Función para autenticar usando la API real
   const enviarFormulario = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validar captcha
+    if (!captchaValido) {
+      setError('Por favor completa correctamente el código de seguridad');
+      return;
+    }
+
     setCargando(true);
 
     try {
-      // Llamar a la API real de Django
       const resultado = await api.login(email, password);
       
       console.log('📥 Respuesta del login:', resultado);
@@ -171,6 +179,9 @@ function LoginUnificado({ cambiarVista, onLogin }) {
             </div>
           </div>
 
+          {/* Captcha */}
+          <SimpleCaptcha onValidate={setCaptchaValido} />
+          
           {/* Botón Ingresar */}
           <button
             type="submit"

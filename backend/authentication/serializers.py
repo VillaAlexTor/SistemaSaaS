@@ -7,7 +7,7 @@ class AdministradorSerializer(serializers.ModelSerializer):
         model = Administrador
         fields = ['id', 'nombre', 'email', 'password', 'rol', 'activo', 'fecha_registro']
         extra_kwargs = {
-            'password': {'write_only': True}  # No devolver password en las respuestas
+            'password': {'write_only': True}  
         }
     
     def create(self, validated_data):

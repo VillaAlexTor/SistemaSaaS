@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import ModalPago from '../common/ModalPago';
 
 function ConfiguracionEmpresa({ usuario, cerrar, onActualizar }) {
   const [pestanaActiva, setPestanaActiva] = useState('general');
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState(null);
-
+  const [mostrarModalPago, setMostrarModalPago] = useState(false);
   // Estados para datos de la empresa
   const [datosGenerales, setDatosGenerales] = useState({
     nombre: usuario.nombre || '',
@@ -47,10 +48,13 @@ function ConfiguracionEmpresa({ usuario, cerrar, onActualizar }) {
   };
 
   const solicitarUpgrade = async () => {
-    if (!window.confirm('¿Deseas mejorar a Plan Premium? Esto activará todas las funciones avanzadas.')) {
-      return;
-    }
+    // Mostrar modal de pago en lugar de confirmar directamente
+    setMostrarModalPago(true);
+  };
 
+  const handlePagoExitoso = async (infoPago) => {
+    console.log('✅ Pago exitoso:', infoPago);
+    setMostrarModalPago(false);
     setCargando(true);
     setMensaje(null);
 
@@ -72,7 +76,6 @@ function ConfiguracionEmpresa({ usuario, cerrar, onActualizar }) {
       setCargando(false);
     }
   };
-
   return (
     <div style={{ 
       position: 'fixed', 
@@ -202,6 +205,14 @@ function ConfiguracionEmpresa({ usuario, cerrar, onActualizar }) {
               cargando={cargando}
             />
           )}
+          {/* Modal de Pago - AGREGAR AL FINAL */}
+            {mostrarModalPago && (
+              <ModalPago 
+                cerrar={() => setMostrarModalPago(false)}
+                onPagoExitoso={handlePagoExitoso}
+                monto={29}
+              />
+            )}
         </div>
       </div>
     </div>
