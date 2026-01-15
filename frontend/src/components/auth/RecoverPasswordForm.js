@@ -3,7 +3,7 @@ import { api } from '../../services/api';
 
 function RecoverPasswordForm({ cambiarVista }) {
   const [email, setEmail] = useState('');
-  const [tipo, setTipo] = useState('usuario'); // 'usuario' o 'microempresa'
+  const [tipo, setTipo] = useState('usuario'); 
   const [cargando, setCargando] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [error, setError] = useState('');

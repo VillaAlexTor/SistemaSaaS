@@ -13,7 +13,6 @@ function ResetPasswordForm({ cambiarVista }) {
   const [exito, setExito] = useState(false);
 
   useEffect(() => {
-    // ✅ CORREGIDO: Obtener el token y tipo desde la URL usando window.location
     const params = new URLSearchParams(window.location.search);
     const tokenParam = params.get('token');
     const tipoParam = params.get('tipo');
