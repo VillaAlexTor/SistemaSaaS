@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import ModalPago from '../common/ModalPago';
-
+import ModalPagoConComprobante from '../common/ModalPagoConComprobante';
 function ConfiguracionEmpresa({ usuario, cerrar, onActualizar }) {
   const [pestanaActiva, setPestanaActiva] = useState('general');
   const [cargando, setCargando] = useState(false);
@@ -47,58 +47,34 @@ function ConfiguracionEmpresa({ usuario, cerrar, onActualizar }) {
     setCargando(false);
   };
 
-  const solicitarUpgrade = async () => {
-    // Abrir selector de archivo
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    
-    input.onchange = async (e) => {
-      const archivo = e.target.files[0];
+  const solicitarUpgrade = () => {
+    setMostrarModalPago(true);
+  };
+
+  const handleEnviarSolicitud = async (archivo, metodoPago) => {
+    setCargando(true);
+    setMensaje(null);
+
+    const resultado = await api.crearSolicitudUpgrade(usuario.id, archivo, metodoPago);
+
+    if (resultado.success) {
+      setMensaje({ 
+        tipo: 'exito', 
+        texto: '✅ Solicitud enviada. El administrador la revisará pronto.' 
+      });
+      setMostrarModalPago(false);
       
-      if (!archivo) {
-        setMensaje({ tipo: 'error', texto: '❌ Debes seleccionar un comprobante de pago' });
-        return;
-      }
+      setTimeout(() => {
+        setMensaje(null);
+      }, 3000);
+    } else {
+      setMensaje({ 
+        tipo: 'error', 
+        texto: '❌ Error al enviar solicitud: ' + (resultado.message || 'Error desconocido')
+      });
+    }
 
-      // Validar tamaño (máximo 5MB)
-      if (archivo.size > 5 * 1024 * 1024) {
-        setMensaje({ tipo: 'error', texto: '❌ El archivo no debe superar 5MB' });
-        return;
-      }
-
-      // Validar tipo de archivo
-      if (!archivo.type.startsWith('image/')) {
-        setMensaje({ tipo: 'error', texto: '❌ Solo se permiten imágenes' });
-        return;
-      }
-
-      setCargando(true);
-      setMensaje(null);
-
-      // Crear solicitud con comprobante
-      const resultado = await api.crearSolicitudUpgrade(usuario.id, archivo);
-
-      if (resultado.success) {
-        setMensaje({ 
-          tipo: 'exito', 
-          texto: '✅ Solicitud enviada. El administrador la revisará pronto.' 
-        });
-        
-        setTimeout(() => {
-          setMensaje(null);
-        }, 3000);
-      } else {
-        setMensaje({ 
-          tipo: 'error', 
-          texto: '❌ Error al enviar solicitud: ' + (resultado.message || 'Error desconocido')
-        });
-      }
-
-      setCargando(false);
-    };
-
-    input.click();
+    setCargando(false);
   };
 
   const handlePagoExitoso = async (infoPago) => {
@@ -254,11 +230,11 @@ function ConfiguracionEmpresa({ usuario, cerrar, onActualizar }) {
               cargando={cargando}
             />
           )}
-          {/* Modal de Pago - AGREGAR AL FINAL */}
+          {/* Modal de Pago CON Comprobante */}
             {mostrarModalPago && (
-              <ModalPago 
+              <ModalPagoConComprobante 
                 cerrar={() => setMostrarModalPago(false)}
-                onPagoExitoso={handlePagoExitoso}
+                onEnviarSolicitud={handleEnviarSolicitud}
                 monto={29}
               />
             )}

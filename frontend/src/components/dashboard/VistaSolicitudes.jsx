@@ -205,6 +205,9 @@ function TarjetaSolicitud({ solicitud, onVerImagen, onAprobar, onRechazar }) {
             <p style={{ margin: '0 0 8px 0', color: '#aaa', fontSize: '13px' }}>
               📧 {solicitud.microempresa_email}
             </p>
+            <p style={{ margin: '0 0 8px 0', color: '#aaa', fontSize: '13px' }}>
+              💳 Método: <strong style={{ color: '#ff9800' }}>{solicitud.metodo_pago_display || solicitud.metodo_pago}</strong>
+            </p>
             <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>
               📅 {new Date(solicitud.fecha_solicitud).toLocaleDateString('es-BO', {
                 year: 'numeric',
@@ -242,12 +245,23 @@ function TarjetaSolicitud({ solicitud, onVerImagen, onAprobar, onRechazar }) {
               e.currentTarget.style.backgroundColor = '#1a1a1a';
             }}
           >
-            <div style={{ fontSize: '50px', marginBottom: '10px' }}>🖼️</div>
-            <p style={{ margin: 0, color: '#ff9800', fontSize: '14px', fontWeight: 'bold' }}>
-              Clic para ver imagen
-            </p>
+            {solicitud.comprobante ? (
+              <>
+                <div style={{ fontSize: '50px', marginBottom: '10px' }}>🖼️</div>
+                <p style={{ margin: 0, color: '#ff9800', fontSize: '14px', fontWeight: 'bold' }}>
+                  Clic para ver imagen
+                </p>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: '50px', marginBottom: '10px', opacity: 0.3 }}>❌</div>
+                <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>
+                  Sin comprobante
+                </p>
+              </>
+            )}
             <p style={{ margin: '5px 0 0 0', color: '#aaa', fontSize: '12px' }}>
-              Monto: <strong style={{ color: '#4caf50' }}>$29.00</strong>
+              Monto: <strong style={{ color: '#4caf50' }}>${solicitud.monto}</strong>
             </p>
           </div>
         </div>

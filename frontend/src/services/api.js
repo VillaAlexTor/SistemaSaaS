@@ -748,16 +748,17 @@ export const api = {
   // ==================== SOLICITUDES DE UPGRADE ====================
 
   // Crear solicitud de upgrade con comprobante
-  crearSolicitudUpgrade: async (microempresaId, archivoComprobante) => {
+  crearSolicitudUpgrade: async (microempresaId, archivoComprobante, metodoPago) => {
     try {
       const formData = new FormData();
       formData.append('microempresa', microempresaId);
       formData.append('comprobante', archivoComprobante);
+      formData.append('metodo_pago', metodoPago);  // NUEVO
       formData.append('monto', 29.00);
 
       const response = await fetch(`${API_URL}/solicitudes-upgrade/`, {
         method: 'POST',
-        body: formData // NO enviar Content-Type, el navegador lo maneja automáticamente
+        body: formData
       });
 
       const result = await response.json();

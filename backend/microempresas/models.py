@@ -145,8 +145,14 @@ class SolicitudUpgrade(models.Model):
         ('rechazado', 'Rechazado'),
     ]
     
+    METODO_PAGO_CHOICES = [
+        ('qr', 'QR / Transferencia'),
+        ('tarjeta', 'Tarjeta'),
+    ]
+    
     microempresa = models.ForeignKey(Microempresa, on_delete=models.CASCADE, related_name='solicitudes_upgrade')
     comprobante = models.ImageField(upload_to='comprobantes/', null=True, blank=True)
+    metodo_pago = models.CharField(max_length=20, choices=METODO_PAGO_CHOICES, default='qr')  # NUEVO CAMPO
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
     fecha_solicitud = models.DateTimeField(auto_now_add=True)
     fecha_revision = models.DateTimeField(null=True, blank=True)

@@ -71,12 +71,13 @@ class PlanSerializer(serializers.ModelSerializer):
 class SolicitudUpgradeSerializer(serializers.ModelSerializer):
     microempresa_nombre = serializers.CharField(source='microempresa.nombre', read_only=True)
     microempresa_email = serializers.CharField(source='microempresa.email', read_only=True)
+    metodo_pago_display = serializers.CharField(source='get_metodo_pago_display', read_only=True)  # NUEVO
     
     class Meta:
         model = SolicitudUpgrade
         fields = [
             'id', 'microempresa', 'microempresa_nombre', 'microempresa_email',
-            'comprobante', 'estado', 'fecha_solicitud', 'fecha_revision',
-            'comentario_admin', 'monto'
+            'comprobante', 'metodo_pago', 'metodo_pago_display', 'estado',  # AGREGADO metodo_pago
+            'fecha_solicitud', 'fecha_revision', 'comentario_admin', 'monto'
         ]
         read_only_fields = ['fecha_solicitud', 'fecha_revision']

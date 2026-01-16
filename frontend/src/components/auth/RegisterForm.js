@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { api } from '../../services/api';
 import ModalPago from '../common/ModalPago';
-
+import ModalPagoConComprobante from '../common/ModalPagoConComprobante';
 function RegisterForm({ cambiarVista }) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
   const [captchaToken, setCaptchaToken] = useState(null);
   const [mostrarModalPago, setMostrarModalPago] = useState(false);
   const [pagoCompletado, setPagoCompletado] = useState(false);
+  const [solicitudPendiente, setSolicitudPendiente] = useState(null);
   const [datos, setDatos] = useState({
     nombreEmpresa: '',
     nit: '',
@@ -35,16 +36,20 @@ function RegisterForm({ cambiarVista }) {
   const manejarSeleccionPlan = (plan) => {
     cambiarDato('plan', plan);
     
-    // Si selecciona premium, mostrar modal de pago
     if (plan === 'premium') {
       setMostrarModalPago(true);
+      setPagoCompletado(false);
     } else {
       setPagoCompletado(false);
+      setSolicitudPendiente(null);
     }
   };
 
-  const handlePagoExitoso = (infoPago) => {
-    console.log('✅ Pago exitoso:', infoPago);
+  const handleEnviarSolicitud = async (archivo, metodoPago) => {
+    console.log('✅ Comprobante y método guardados:', archivo.name, metodoPago);
+    
+    // Guardar para enviar DESPUÉS del registro
+    setSolicitudPendiente({ archivo, metodoPago });
     setPagoCompletado(true);
     setMostrarModalPago(false);
   };
@@ -53,21 +58,18 @@ function RegisterForm({ cambiarVista }) {
     e.preventDefault();
     setError('');
     
-    // Validar captcha
     if (!captchaToken) {
       setError('Por favor completa el CAPTCHA');
       return;
     }
 
-    // Validar contraseñas
     if (datos.password !== datos.password2) {
       setError('Las contraseñas no coinciden');
       return;
     }
 
-    // Validar pago si es premium
     if (datos.plan === 'premium' && !pagoCompletado) {
-      setError('Debes completar el pago para el Plan Premium');
+      setError('Debes completar el proceso de pago para el Plan Premium');
       setMostrarModalPago(true);
       return;
     }
@@ -82,14 +84,30 @@ function RegisterForm({ cambiarVista }) {
       telefono: datos.telefono,
       direccion: datos.direccion,
       rubro: datos.rubro,
-      plan: datos.plan,
+      plan: 'basico',  // SIEMPRE REGISTRAR COMO BÁSICO PRIMERO
       recaptcha_token: captchaToken
     };
 
     const resultado = await api.registerMicroempresa(datosEnviar);
 
     if (resultado.success) {
-      alert('¡Empresa registrada exitosamente!');
+      // Si eligió Premium, crear la solicitud
+      if (datos.plan === 'premium' && solicitudPendiente) {
+        const solicitudResult = await api.crearSolicitudUpgrade(
+          resultado.data.id,
+          solicitudPendiente.archivo,
+          solicitudPendiente.metodoPago
+        );
+
+        if (solicitudResult.success) {
+          alert('✅ Empresa registrada y solicitud de Premium enviada. El administrador la revisará pronto.');
+        } else {
+          alert('✅ Empresa registrada, pero hubo un error al enviar la solicitud de Premium. Puedes hacerlo desde tu panel.');
+        }
+      } else {
+        alert('✅ Empresa registrada exitosamente!');
+      }
+      
       cambiarVista('login');
     } else {
       setError(resultado.message || 'Error al registrar la empresa');
@@ -484,9 +502,9 @@ function RegisterForm({ cambiarVista }) {
 
       {/* Modal de Pago */}
       {mostrarModalPago && (
-        <ModalPago 
+        <ModalPagoConComprobante 
           cerrar={() => setMostrarModalPago(false)}
-          onPagoExitoso={handlePagoExitoso}
+          onEnviarSolicitud={handleEnviarSolicitud}
           monto={29}
         />
       )}
