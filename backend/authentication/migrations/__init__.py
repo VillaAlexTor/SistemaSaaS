@@ -1,0 +1,1 @@
+# backend/authentication/migrations/__init__.py

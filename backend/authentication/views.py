@@ -4,7 +4,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth.hashers import check_password
 
-# ✅ Imports correctos
 from .models import Administrador, UsuarioInterno, Notificacion
 from .serializers import AdministradorSerializer, UsuarioInternoSerializer, NotificacionSerializer
 from microempresas.models import Microempresa
@@ -103,7 +102,7 @@ class LoginView(viewsets.ViewSet):
         except Usuario.DoesNotExist:
             pass
         
-        # Si ninguno funcionó
+        # Si ninguno funciona
         return Response({
             'success': False,
             'message': 'Email o contraseña incorrectos'

@@ -1,3 +1,4 @@
+# backend/authentication/serializers.py
 from rest_framework import serializers
 from .models import Administrador, UsuarioInterno, Notificacion
 from django.contrib.auth.hashers import make_password

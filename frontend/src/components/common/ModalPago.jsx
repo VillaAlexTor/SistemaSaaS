@@ -40,7 +40,7 @@ function ModalPago({ cerrar, onPagoExitoso, monto = 120 }) {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Simular éxito (en producción aquí iría la llamada real a la pasarela)
-    const exito = true; // Cambiar a lógica real cuando integres pasarela
+    const exito = true; 
 
     if (exito) {
       alert('✅ ¡Pago procesado exitosamente!');

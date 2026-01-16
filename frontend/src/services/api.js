@@ -709,4 +709,40 @@ export const api = {
       return { success: false, message: 'Error de conexión' };
     }
   },
+  // ==================== GESTIÓN DE PERFIL DE USUARIO ====================
+
+  // Obtener información del usuario
+  getUsuarioInfo: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/usuarios/${id}/`);
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al obtener información' };
+      }
+    } catch (error) {
+      console.error('Error al obtener info de usuario:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Actualizar perfil de usuario
+  updatePerfilUsuario: async (id, datos) => {
+    try {
+      const response = await fetch(`${API_URL}/usuarios/${id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+      const result = await response.json();
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al actualizar', errors: result };
+      }
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
 };
