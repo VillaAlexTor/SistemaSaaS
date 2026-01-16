@@ -153,3 +153,7 @@ DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER')
 # ==========================================
 RECAPTCHA_PUBLIC_KEY = env('RECAPTCHA_PUBLIC_KEY')
 RECAPTCHA_PRIVATE_KEY = env('RECAPTCHA_PRIVATE_KEY')
+
+# Configuración de archivos MEDIA 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

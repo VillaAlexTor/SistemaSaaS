@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import DetalleMicroempresaModal from './DetalleMicroempresaModal';
+import VistaSolicitudes from './VistaSolicitudes';
 function Dashboard({ usuario, cerrarSesion }) {
   const [vistaActual, setVistaActual] = useState('inicio');
   const [microempresas, setMicroempresas] = useState([]);
@@ -139,6 +140,7 @@ function Dashboard({ usuario, cerrarSesion }) {
             { id: 'usuarios', icono: '👥', texto: 'Usuarios' },
             { id: 'reportes', icono: '📊', texto: 'Reportes' },
             { id: 'planes', icono: '💎', texto: 'Planes' },  
+            { id: 'solicitudes', icono: '📋', texto: 'Solicitudes', badge: 0 },
             { id: 'papelera', icono: '🗑️', texto: 'Papelera', badge: microsInactivas.length + usuariosInactivos.length }
           ].map(item => (
             <button
@@ -354,6 +356,9 @@ function Dashboard({ usuario, cerrarSesion }) {
             )},
             {vistaActual === 'planes' && (
               <VistaPlanes microempresas={microempresas} />
+            )},
+            {vistaActual === 'solicitudes' && (
+              <VistaSolicitudes actualizarDatos={cargarDatos} />
             )},
             {vistaActual === 'papelera' && (
               <>

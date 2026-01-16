@@ -745,4 +745,87 @@ export const api = {
       return { success: false, message: 'Error de conexión' };
     }
   },
+  // ==================== SOLICITUDES DE UPGRADE ====================
+
+  // Crear solicitud de upgrade con comprobante
+  crearSolicitudUpgrade: async (microempresaId, archivoComprobante) => {
+    try {
+      const formData = new FormData();
+      formData.append('microempresa', microempresaId);
+      formData.append('comprobante', archivoComprobante);
+      formData.append('monto', 29.00);
+
+      const response = await fetch(`${API_URL}/solicitudes-upgrade/`, {
+        method: 'POST',
+        body: formData // NO enviar Content-Type, el navegador lo maneja automáticamente
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al crear solicitud', errors: result };
+      }
+    } catch (error) {
+      console.error('Error al crear solicitud:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Obtener todas las solicitudes (para admin)
+  getSolicitudesUpgrade: async () => {
+    try {
+      const response = await fetch(`${API_URL}/solicitudes-upgrade/`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener solicitudes:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Obtener solicitudes de una microempresa específica
+  getSolicitudesMicroempresa: async (microempresaId) => {
+    try {
+      const response = await fetch(`${API_URL}/solicitudes-upgrade/?microempresa=${microempresaId}`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener solicitudes:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Aprobar solicitud (admin)
+  aprobarSolicitud: async (solicitudId, comentario = '') => {
+    try {
+      const response = await fetch(`${API_URL}/solicitudes-upgrade/${solicitudId}/aprobar/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comentario })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error al aprobar solicitud:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Rechazar solicitud (admin)
+  rechazarSolicitud: async (solicitudId, comentario = '') => {
+    try {
+      const response = await fetch(`${API_URL}/solicitudes-upgrade/${solicitudId}/rechazar/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comentario })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error al rechazar solicitud:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
 };

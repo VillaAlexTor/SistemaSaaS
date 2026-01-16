@@ -1,13 +1,14 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .models import Microempresa, Cliente, Proveedor, Compra, Venta, Plan
+from .models import Microempresa, Cliente, Proveedor, Compra, Venta, Plan, SolicitudUpgrade
 from .serializers import (
     MicroempresaSerializer, ClienteSerializer, ProveedorSerializer,
-    CompraSerializer, VentaSerializer, PlanSerializer
+    CompraSerializer, VentaSerializer, PlanSerializer, SolicitudUpgradeSerializer
 )
 from rest_framework.decorators import action
 from django.contrib.auth.hashers import check_password, make_password
 from sistema_ventas_api.utils import verify_recaptcha
+from django.utils import timezone
 class MicroempresaViewSet(viewsets.ModelViewSet):
     queryset = Microempresa.objects.all()
     serializer_class = MicroempresaSerializer
@@ -107,3 +108,65 @@ class VentaViewSet(viewsets.ModelViewSet):
 class PlanViewSet(viewsets.ModelViewSet):
     queryset = Plan.objects.filter(activo=True)
     serializer_class = PlanSerializer
+
+from rest_framework.decorators import action
+from django.utils import timezone
+
+class SolicitudUpgradeViewSet(viewsets.ModelViewSet):
+    queryset = SolicitudUpgrade.objects.all()
+    serializer_class = SolicitudUpgradeSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        microempresa_id = self.request.query_params.get('microempresa', None)
+        if microempresa_id:
+            queryset = queryset.filter(microempresa_id=microempresa_id)
+        return queryset
+    
+    @action(detail=True, methods=['post'])
+    def aprobar(self, request, pk=None):
+        """Aprobar una solicitud y cambiar el plan a Premium"""
+        solicitud = self.get_object()
+        
+        if solicitud.estado != 'pendiente':
+            return Response({
+                'success': False,
+                'message': 'Esta solicitud ya fue procesada'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Cambiar el plan de la microempresa a Premium
+        solicitud.microempresa.plan = 'premium'
+        solicitud.microempresa.save()
+        
+        # Actualizar la solicitud
+        solicitud.estado = 'aprobado'
+        solicitud.fecha_revision = timezone.now()
+        solicitud.comentario_admin = request.data.get('comentario', 'Solicitud aprobada')
+        solicitud.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Solicitud aprobada y plan actualizado a Premium'
+        })
+    
+    @action(detail=True, methods=['post'])
+    def rechazar(self, request, pk=None):
+        """Rechazar una solicitud"""
+        solicitud = self.get_object()
+        
+        if solicitud.estado != 'pendiente':
+            return Response({
+                'success': False,
+                'message': 'Esta solicitud ya fue procesada'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Actualizar la solicitud
+        solicitud.estado = 'rechazado'
+        solicitud.fecha_revision = timezone.now()
+        solicitud.comentario_admin = request.data.get('comentario', 'Solicitud rechazada')
+        solicitud.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Solicitud rechazada'
+        })

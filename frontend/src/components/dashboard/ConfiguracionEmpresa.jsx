@@ -48,8 +48,57 @@ function ConfiguracionEmpresa({ usuario, cerrar, onActualizar }) {
   };
 
   const solicitarUpgrade = async () => {
-    // Mostrar modal de pago en lugar de confirmar directamente
-    setMostrarModalPago(true);
+    // Abrir selector de archivo
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = async (e) => {
+      const archivo = e.target.files[0];
+      
+      if (!archivo) {
+        setMensaje({ tipo: 'error', texto: '❌ Debes seleccionar un comprobante de pago' });
+        return;
+      }
+
+      // Validar tamaño (máximo 5MB)
+      if (archivo.size > 5 * 1024 * 1024) {
+        setMensaje({ tipo: 'error', texto: '❌ El archivo no debe superar 5MB' });
+        return;
+      }
+
+      // Validar tipo de archivo
+      if (!archivo.type.startsWith('image/')) {
+        setMensaje({ tipo: 'error', texto: '❌ Solo se permiten imágenes' });
+        return;
+      }
+
+      setCargando(true);
+      setMensaje(null);
+
+      // Crear solicitud con comprobante
+      const resultado = await api.crearSolicitudUpgrade(usuario.id, archivo);
+
+      if (resultado.success) {
+        setMensaje({ 
+          tipo: 'exito', 
+          texto: '✅ Solicitud enviada. El administrador la revisará pronto.' 
+        });
+        
+        setTimeout(() => {
+          setMensaje(null);
+        }, 3000);
+      } else {
+        setMensaje({ 
+          tipo: 'error', 
+          texto: '❌ Error al enviar solicitud: ' + (resultado.message || 'Error desconocido')
+        });
+      }
+
+      setCargando(false);
+    };
+
+    input.click();
   };
 
   const handlePagoExitoso = async (infoPago) => {

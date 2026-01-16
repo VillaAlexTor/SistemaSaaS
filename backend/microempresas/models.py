@@ -137,3 +137,25 @@ class Plan(models.Model):
     
     class Meta:
         db_table = 'planes'
+        
+class SolicitudUpgrade(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('aprobado', 'Aprobado'),
+        ('rechazado', 'Rechazado'),
+    ]
+    
+    microempresa = models.ForeignKey(Microempresa, on_delete=models.CASCADE, related_name='solicitudes_upgrade')
+    comprobante = models.ImageField(upload_to='comprobantes/', null=True, blank=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+    fecha_solicitud = models.DateTimeField(auto_now_add=True)
+    fecha_revision = models.DateTimeField(null=True, blank=True)
+    comentario_admin = models.TextField(blank=True, null=True)
+    monto = models.DecimalField(max_digits=10, decimal_places=2, default=29.00)
+    
+    class Meta:
+        db_table = 'solicitudes_upgrade'
+        ordering = ['-fecha_solicitud']
+    
+    def __str__(self):
+        return f"Solicitud {self.id} - {self.microempresa.nombre} - {self.estado}"

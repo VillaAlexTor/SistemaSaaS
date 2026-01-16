@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Microempresa, Cliente, Proveedor, Compra, DetalleCompra, Venta, DetalleVenta, Plan
 from django.contrib.auth.hashers import make_password
+from .models import Microempresa, Cliente, Proveedor, Compra, DetalleCompra, Venta, DetalleVenta, Plan, SolicitudUpgrade
 
 class MicroempresaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -66,3 +67,16 @@ class PlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plan
         fields = '__all__'
+
+class SolicitudUpgradeSerializer(serializers.ModelSerializer):
+    microempresa_nombre = serializers.CharField(source='microempresa.nombre', read_only=True)
+    microempresa_email = serializers.CharField(source='microempresa.email', read_only=True)
+    
+    class Meta:
+        model = SolicitudUpgrade
+        fields = [
+            'id', 'microempresa', 'microempresa_nombre', 'microempresa_email',
+            'comprobante', 'estado', 'fecha_solicitud', 'fecha_revision',
+            'comentario_admin', 'monto'
+        ]
+        read_only_fields = ['fecha_solicitud', 'fecha_revision']
