@@ -14,8 +14,35 @@ import CatalogoPublico from './components/catalogo/CatalogoPublico';
 function App() {
   const [vista, setVista] = useState('home');
   const [usuarioActual, setUsuarioActual] = useState(null);
+  const [cargando, setCargando] = useState(true); // Estado de carga inicial
 
-  // ✅ NUEVO: Detectar la URL al cargar la página
+  // ✅ RECUPERAR SESIÓN AL CARGAR LA APP
+  useEffect(() => {
+    const usuarioGuardado = localStorage.getItem('usuario');
+    
+    if (usuarioGuardado) {
+      try {
+        const usuario = JSON.parse(usuarioGuardado);
+        setUsuarioActual(usuario);
+        
+        // Redirigir al dashboard correspondiente
+        if (usuario.rol === 'superadmin') {
+          setVista('dashboardAdmin');
+        } else if (usuario.rol === 'microempresa') {
+          setVista('dashboardMicroempresa');
+        } else if (usuario.rol === 'usuario') {
+          setVista('dashboardUsuario');
+        }
+      } catch (error) {
+        console.error('Error al parsear usuario guardado:', error);
+        localStorage.removeItem('usuario');
+      }
+    }
+    
+    setCargando(false);
+  }, []);
+
+  // ✅ DETECTAR URL DE RESET PASSWORD
   useEffect(() => {
     const path = window.location.pathname;
     const search = window.location.search;
@@ -26,8 +53,12 @@ function App() {
     }
   }, []);
 
+  // ✅ HACER LOGIN Y GUARDAR EN LOCALSTORAGE
   const hacerLogin = (datosUsuario) => {
     setUsuarioActual(datosUsuario);
+    
+    // Guardar en localStorage
+    localStorage.setItem('usuario', JSON.stringify(datosUsuario));
     
     // Redirigir según el rol del usuario
     if (datosUsuario.rol === 'superadmin') {
@@ -39,11 +70,37 @@ function App() {
     }
   };
 
-  // Cerrar sesión
+  // ✅ CERRAR SESIÓN Y LIMPIAR LOCALSTORAGE
   const cerrarSesion = () => {
     setUsuarioActual(null);
+    localStorage.removeItem('usuario');
     setVista('home');
   };
+
+  // ✅ ACTUALIZAR USUARIO EN ESTADO Y LOCALSTORAGE
+  const actualizarUsuario = (nuevosDatos) => {
+    const usuarioActualizado = { ...usuarioActual, ...nuevosDatos };
+    setUsuarioActual(usuarioActualizado);
+    localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+  };
+
+  // Mostrar pantalla de carga mientras recupera la sesión
+  if (cargando) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        backgroundColor: '#1a1a1a'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '60px', marginBottom: '20px' }}>⏳</div>
+          <p style={{ color: '#ff9800', fontSize: '18px' }}>Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Mostrar la vista correspondiente
   if (vista === 'home') {
@@ -66,27 +123,43 @@ function App() {
     return <RecoverPasswordForm cambiarVista={setVista} />;
   }
 
-  // ✅ Vista de reset password
   if (vista === 'reset-password') {
     return <ResetPasswordForm cambiarVista={setVista} />;
   }
 
-  // Catálogo público (sin login)
   if (vista === 'catalogoPublico') {
     return <CatalogoPublico cambiarVista={setVista} />;
   }
 
   // Dashboards según rol
   if (vista === 'dashboardAdmin') {
-    return <Dashboard usuario={usuarioActual} cerrarSesion={cerrarSesion} />;
+    return (
+      <Dashboard 
+        usuario={usuarioActual} 
+        cerrarSesion={cerrarSesion}
+        actualizarUsuario={actualizarUsuario}
+      />
+    );
   }
 
   if (vista === 'dashboardMicroempresa') {
-    return <DashboardMicroempresa usuario={usuarioActual} cerrarSesion={cerrarSesion} />;
+    return (
+      <DashboardMicroempresa 
+        usuario={usuarioActual} 
+        cerrarSesion={cerrarSesion}
+        actualizarUsuario={actualizarUsuario}
+      />
+    );
   }
 
   if (vista === 'dashboardUsuario') {
-    return <DashboardUsuario usuario={usuarioActual} cerrarSesion={cerrarSesion} />;
+    return (
+      <DashboardUsuario 
+        usuario={usuarioActual} 
+        cerrarSesion={cerrarSesion}
+        actualizarUsuario={actualizarUsuario}
+      />
+    );
   }
 
   // Vista por defecto
