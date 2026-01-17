@@ -86,7 +86,27 @@ class LoginView(viewsets.ViewSet):
         except Microempresa.DoesNotExist:
             pass
         
-        # 3. Intentar como Usuario
+        # 3. Intentar como Cliente/Empleado (NUEVO)
+        try:
+            from microempresas.models import Cliente
+            cliente = Cliente.objects.get(email=email, rol='vendedor', activo=True, eliminado=False)
+            if cliente.password and check_password(password, cliente.password):
+                return Response({
+                    'success': True,
+                    'usuario': {
+                        'id': cliente.id,
+                        'nombre': f"{cliente.nombre} {cliente.apellido or ''}".strip(),
+                        'email': cliente.email,
+                        'rol': 'empleado',
+                        'microempresa_id': cliente.microempresa.id,
+                        'microempresa_nombre': cliente.microempresa.nombre,
+                        'microempresa_plan': cliente.microempresa.plan
+                    }
+                })
+        except Cliente.DoesNotExist:
+            pass
+        
+        # 4. Intentar como Usuario
         try:
             usuario = Usuario.objects.get(email=email)
             if check_password(password, usuario.password):

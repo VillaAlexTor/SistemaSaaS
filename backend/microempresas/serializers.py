@@ -17,10 +17,35 @@ class MicroempresaSerializer(serializers.ModelSerializer):
 
 class ClienteSerializer(serializers.ModelSerializer):
     microempresa_nombre = serializers.CharField(source='microempresa.nombre', read_only=True)
+    microempresa_id = serializers.IntegerField(source='microempresa.id', read_only=True)
+    rol_display = serializers.CharField(source='get_rol_display', read_only=True)
     
     class Meta:
         model = Cliente
-        fields = ['id', 'microempresa', 'microempresa_nombre', 'nombre', 'apellido', 'email', 'telefono', 'ci_nit', 'direccion', 'es_generico', 'activo', 'fecha_registro']
+        fields = [
+            'id', 'microempresa', 'microempresa_id', 'microempresa_nombre',
+            'nombre', 'apellido', 'ci_nit', 'telefono', 'direccion',
+            'email', 'password', 'rol', 'rol_display',
+            'activo', 'eliminado', 'fecha_eliminacion',
+            'es_generico', 'fecha_registro'
+        ]
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+    
+    def create(self, validated_data):
+        # Si es vendedor, encriptar contraseña
+        if validated_data.get('rol') == 'vendedor' and validated_data.get('password'):
+            from django.contrib.auth.hashers import make_password
+            validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        # Si se actualiza la contraseña, encriptarla
+        if 'password' in validated_data and validated_data['password']:
+            from django.contrib.auth.hashers import make_password
+            validated_data['password'] = make_password(validated_data['password'])
+        return super().update(instance, validated_data)
 
 class ProveedorSerializer(serializers.ModelSerializer):
     class Meta:

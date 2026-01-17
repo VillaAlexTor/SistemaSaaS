@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import DetalleMicroempresaModal from './DetalleMicroempresaModal';
 import VistaSolicitudes from './VistaSolicitudes';
+import VistaEmpleadosPorEmpresa from './VistaEmpleadosPorEmpresa.jsx';
 function Dashboard({ usuario, cerrarSesion }) {
   const [vistaActual, setVistaActual] = useState('inicio');
   const [microempresas, setMicroempresas] = useState([]);
@@ -138,6 +139,7 @@ function Dashboard({ usuario, cerrarSesion }) {
             { id: 'inicio', icono: '🏠', texto: 'Inicio' },
             { id: 'microempresas', icono: '🏪', texto: 'Microempresas' },
             { id: 'usuarios', icono: '👥', texto: 'Usuarios' },
+            { id: 'empleados', icono: '👔', texto: 'Empleados' }, // ✅ NUEVO
             { id: 'reportes', icono: '📊', texto: 'Reportes' },
             { id: 'planes', icono: '💎', texto: 'Planes' },  
             { id: 'solicitudes', icono: '📋', texto: 'Solicitudes', badge: 0 },
@@ -288,6 +290,10 @@ function Dashboard({ usuario, cerrarSesion }) {
                   )}
                 </div>
               </>
+            )}
+
+            {vistaActual === 'empleados' && (
+              <VistaEmpleadosPorEmpresa />
             )}
 
             {vistaActual === 'usuarios' && (

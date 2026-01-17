@@ -68,9 +68,112 @@ class ClienteViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         microempresa_id = self.request.query_params.get('microempresa', None)
+        eliminados = self.request.query_params.get('eliminados', 'false')
+        rol = self.request.query_params.get('rol', None)
+        
         if microempresa_id:
             queryset = queryset.filter(microempresa_id=microempresa_id)
+        
+        # Filtrar por estado eliminado
+        if eliminados == 'true':
+            queryset = queryset.filter(eliminado=True)
+        else:
+            queryset = queryset.filter(eliminado=False)
+        
+        # Filtrar por rol
+        if rol:
+            queryset = queryset.filter(rol=rol)
+        
         return queryset
+    
+    @action(detail=True, methods=['delete'])
+    def soft_delete(self, request, pk=None):
+        """Enviar a papelera (soft delete)"""
+        cliente = self.get_object()
+        
+        if cliente.eliminado:
+            return Response({
+                'success': False,
+                'message': 'Este empleado ya está en la papelera'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        cliente.eliminado = True
+        cliente.activo = False
+        cliente.fecha_eliminacion = timezone.now()
+        cliente.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Empleado enviado a la papelera'
+        })
+    
+    @action(detail=True, methods=['post'])
+    def restaurar(self, request, pk=None):
+        """Restaurar de la papelera"""
+        cliente = self.get_object()
+        
+        if not cliente.eliminado:
+            return Response({
+                'success': False,
+                'message': 'Este empleado no está en la papelera'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        cliente.eliminado = False
+        cliente.activo = True
+        cliente.fecha_eliminacion = None
+        cliente.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Empleado restaurado exitosamente'
+        })
+    
+    @action(detail=True, methods=['delete'])
+    def eliminar_permanente(self, request, pk=None):
+        """Eliminar permanentemente de la base de datos"""
+        cliente = self.get_object()
+        
+        if not cliente.eliminado:
+            return Response({
+                'success': False,
+                'message': 'Primero debes enviar el empleado a la papelera'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        cliente.delete()
+        
+        return Response({
+            'success': True,
+            'message': 'Empleado eliminado permanentemente'
+        })
+    
+    @action(detail=True, methods=['post'])
+    def cambiar_password(self, request, pk=None):
+        """Cambiar contraseña de empleado"""
+        cliente = self.get_object()
+        password_actual = request.data.get('password_actual')
+        nueva_password = request.data.get('nueva_password')
+        
+        if not password_actual or not nueva_password:
+            return Response({
+                'success': False,
+                'message': 'Se requiere la contraseña actual y la nueva'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verificar que la contraseña actual sea correcta
+        if not check_password(password_actual, cliente.password):
+            return Response({
+                'success': False,
+                'message': 'La contraseña actual es incorrecta'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Actualizar la contraseña
+        cliente.password = make_password(nueva_password)
+        cliente.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Contraseña actualizada correctamente'
+        })
 
 class ProveedorViewSet(viewsets.ModelViewSet):
     queryset = Proveedor.objects.all()

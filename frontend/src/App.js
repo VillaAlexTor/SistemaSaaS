@@ -7,6 +7,7 @@ import RecoverPasswordForm from './components/auth/RecoverPasswordForm';
 import ResetPasswordForm from './components/auth/ResetPasswordForm'; 
 import Dashboard from './components/dashboard/Dashboard';
 import DashboardMicroempresa from './components/dashboard/DashboardMicroempresa';
+import DashboardEmpleado from './components/dashboard/DashboardEmpleado'; // ✅ IMPORTAR
 import DashboardUsuario from './components/dashboard/DashboardUsuario';
 import CatalogoPublico from './components/catalogo/CatalogoPublico';
 
@@ -14,7 +15,7 @@ import CatalogoPublico from './components/catalogo/CatalogoPublico';
 function App() {
   const [vista, setVista] = useState('home');
   const [usuarioActual, setUsuarioActual] = useState(null);
-  const [cargando, setCargando] = useState(true); // Estado de carga inicial
+  const [cargando, setCargando] = useState(true);
 
   // ✅ RECUPERAR SESIÓN AL CARGAR LA APP
   useEffect(() => {
@@ -30,6 +31,8 @@ function App() {
           setVista('dashboardAdmin');
         } else if (usuario.rol === 'microempresa') {
           setVista('dashboardMicroempresa');
+        } else if (usuario.rol === 'empleado') {
+          setVista('dashboardEmpleado');
         } else if (usuario.rol === 'usuario') {
           setVista('dashboardUsuario');
         }
@@ -47,7 +50,6 @@ function App() {
     const path = window.location.pathname;
     const search = window.location.search;
 
-    // Si la URL contiene /reset-password o ?token=
     if (path.includes('reset-password') || search.includes('token=')) {
       setVista('reset-password');
     }
@@ -56,8 +58,6 @@ function App() {
   // ✅ HACER LOGIN Y GUARDAR EN LOCALSTORAGE
   const hacerLogin = (datosUsuario) => {
     setUsuarioActual(datosUsuario);
-    
-    // Guardar en localStorage
     localStorage.setItem('usuario', JSON.stringify(datosUsuario));
     
     // Redirigir según el rol del usuario
@@ -65,6 +65,8 @@ function App() {
       setVista('dashboardAdmin');
     } else if (datosUsuario.rol === 'microempresa') {
       setVista('dashboardMicroempresa');
+    } else if (datosUsuario.rol === 'empleado') {
+      setVista('dashboardEmpleado');
     } else if (datosUsuario.rol === 'usuario') {
       setVista('dashboardUsuario');
     }
@@ -145,6 +147,17 @@ function App() {
   if (vista === 'dashboardMicroempresa') {
     return (
       <DashboardMicroempresa 
+        usuario={usuarioActual} 
+        cerrarSesion={cerrarSesion}
+        actualizarUsuario={actualizarUsuario}
+      />
+    );
+  }
+
+  // ✅ Dashboard de Empleado
+  if (vista === 'dashboardEmpleado') {
+    return (
+      <DashboardEmpleado 
         usuario={usuarioActual} 
         cerrarSesion={cerrarSesion}
         actualizarUsuario={actualizarUsuario}

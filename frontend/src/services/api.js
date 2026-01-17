@@ -829,4 +829,165 @@ export const api = {
       return { success: false, message: 'Error de conexión' };
     }
   },
+  // ==================== GESTIÓN DE EMPLEADOS/VENDEDORES ====================
+  // Obtener empleados de una microempresa
+  getEmpleados: async (microempresaId, incluirEliminados = false) => {
+    try {
+      const url = incluirEliminados 
+        ? `${API_URL}/clientes/?microempresa=${microempresaId}&rol=vendedor&eliminados=true`
+        : `${API_URL}/clientes/?microempresa=${microempresaId}&rol=vendedor`;
+      
+      const response = await fetch(url);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener empleados:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Crear empleado/vendedor
+  createEmpleado: async (datos) => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...datos, rol: 'vendedor' })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al crear empleado', errors: result };
+      }
+    } catch (error) {
+      console.error('Error al crear empleado:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Actualizar empleado
+  updateEmpleado: async (id, datos) => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/${id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        return { success: true, data: result };
+      } else {
+        return { success: false, message: 'Error al actualizar', errors: result };
+      }
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Soft delete (enviar a papelera) - ✅ CORREGIDO
+  softDeleteEmpleado: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/${id}/soft_delete/`, {
+        method: 'DELETE'
+      });
+      
+      // ✅ FIX: Verificar si la respuesta es exitosa antes de parsear
+      if (response.ok) {
+        const result = await response.json();
+        return result;
+      } else {
+        const errorData = await response.json();
+        return { 
+          success: false, 
+          message: errorData.message || 'Error al eliminar empleado' 
+        };
+      }
+    } catch (error) {
+      console.error('Error en softDeleteEmpleado:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Restaurar de papelera - ✅ CORREGIDO
+  restaurarEmpleado: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/${id}/restaurar/`, {
+        method: 'POST'
+      });
+      
+      // ✅ FIX: Verificar si la respuesta es exitosa antes de parsear
+      if (response.ok) {
+        const result = await response.json();
+        return result;
+      } else {
+        const errorData = await response.json();
+        return { 
+          success: false, 
+          message: errorData.message || 'Error al restaurar empleado' 
+        };
+      }
+    } catch (error) {
+      console.error('Error en restaurarEmpleado:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Eliminar permanentemente - ✅ CORREGIDO
+  eliminarEmpleadoPermanente: async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/${id}/eliminar_permanente/`, {
+        method: 'DELETE'
+      });
+      
+      // ✅ FIX: Verificar si la respuesta es exitosa antes de parsear
+      if (response.ok) {
+        const result = await response.json();
+        return result;
+      } else {
+        const errorData = await response.json();
+        return { 
+          success: false, 
+          message: errorData.message || 'Error al eliminar empleado permanentemente' 
+        };
+      }
+    } catch (error) {
+      console.error('Error en eliminarEmpleadoPermanente:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Cambiar contraseña de empleado
+  cambiarPasswordEmpleado: async (id, passwordActual, nuevaPassword) => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/${id}/cambiar_password/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          password_actual: passwordActual,
+          nueva_password: nuevaPassword
+        })
+      });
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
+  // Obtener clientes compradores (para que los empleados vean quiénes compran)
+  getClientesCompradores: async (microempresaId) => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/?microempresa=${microempresaId}&rol=comprador`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
 };

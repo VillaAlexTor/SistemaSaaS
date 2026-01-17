@@ -40,20 +40,55 @@ class Microempresa(models.Model):
         return self.nombre
 
 class Cliente(models.Model):
+    ROL_CHOICES = [
+        ('vendedor', 'Vendedor/Empleado'),
+        ('comprador', 'Cliente Comprador'),
+    ]
+    
     microempresa = models.ForeignKey(Microempresa, on_delete=models.CASCADE, related_name='clientes')
+    
+    # Datos personales
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-    telefono = models.CharField(max_length=20)
     ci_nit = models.CharField(max_length=20, blank=True, null=True)
+    telefono = models.CharField(max_length=20)
     direccion = models.TextField(blank=True, null=True)
-    es_generico = models.BooleanField(default=False)  # Para ventas rápidas
+    
+    # Login (solo para empleados/vendedores)
+    email = models.EmailField(unique=True, null=True, blank=True)  # ÚNICO GLOBALMENTE
+    password = models.CharField(max_length=255, null=True, blank=True)
+    
+    # Rol y permisos
+    rol = models.CharField(max_length=20, choices=ROL_CHOICES, default='comprador')
+    
+    # Estado
     activo = models.BooleanField(default=True)
+    eliminado = models.BooleanField(default=False)  # Soft delete
+    fecha_eliminacion = models.DateTimeField(null=True, blank=True)
+    
+    # Fechas
     fecha_registro = models.DateTimeField(auto_now_add=True)
+    
+    # Token de recuperación de contraseña
+    reset_password_token = models.CharField(max_length=100, blank=True, null=True)
+    reset_password_token_created = models.DateTimeField(blank=True, null=True)
+    
+    # Para ventas genéricas (clientes sin registro)
+    es_generico = models.BooleanField(default=False)
     
     class Meta:
         db_table = 'clientes'
-        unique_together = ['microempresa', 'email']
+        ordering = ['-fecha_registro']
+    
+    def __str__(self):
+        return f"{self.nombre} {self.apellido or ''} - {self.get_rol_display()}"
+    
+    def save(self, *args, **kwargs):
+        # Solo encriptar password si es vendedor y tiene password
+        if self.rol == 'vendedor' and self.password and not self.password.startswith('pbkdf2_'):
+            from django.contrib.auth.hashers import make_password
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
 
 class Proveedor(models.Model):
     microempresa = models.ForeignKey(Microempresa, on_delete=models.CASCADE, related_name='proveedores')
