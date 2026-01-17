@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 
+
 function VistaSolicitudes({ actualizarDatos }) {
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -123,7 +124,7 @@ function VistaSolicitudes({ actualizarDatos }) {
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       <button
-                        onClick={() => setModalImagen(s.comprobante)}
+                        onClick={() => setModalImagen(s.comprobante_url || s.comprobante)}
                         style={{
                           padding: '6px 12px',
                           backgroundColor: '#9c27b0',
@@ -313,13 +314,26 @@ function TarjetaSolicitud({ solicitud, onVerImagen, onAprobar, onRechazar }) {
       </div>
     </div>
   );
-}
+} 
 
 // ============================================
 // MODAL: VER IMAGEN
 // ============================================
 
 function ModalImagen({ url, cerrar }) {
+  const [error, setError] = useState(false);
+  const [cargando, setCargando] = useState(true);
+
+  // Limpiar URL: si ya tiene el dominio, no agregarlo de nuevo
+  const urlCompleta = url.startsWith('http://127.0.0.1:8000') 
+    ? url 
+    : url.startsWith('/media') 
+      ? `http://127.0.0.1:8000${url}` 
+      : url;
+
+  console.log('🖼️ URL original:', url);
+  console.log('🖼️ URL completa:', urlCompleta);
+
   return (
     <div style={{
       position: 'fixed',
@@ -363,17 +377,72 @@ function ModalImagen({ url, cerrar }) {
         >
           ✕
         </button>
-        <img
-          src={url}
-          alt="Comprobante de pago"
-          style={{
-            maxWidth: '100%',
-            maxHeight: '80vh',
+
+        {cargando && !error && (
+          <div style={{
+            textAlign: 'center',
+            color: '#fff',
+            padding: '40px'
+          }}>
+            <div style={{ fontSize: '60px', marginBottom: '20px' }}>⏳</div>
+            <p>Cargando imagen...</p>
+          </div>
+        )}
+
+        {error ? (
+          <div style={{
+            textAlign: 'center',
+            color: '#fff',
+            padding: '40px',
+            backgroundColor: '#2d2d2d',
             borderRadius: '10px',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.5)'
-          }}
-          onClick={(e) => e.stopPropagation()}
-        />
+            border: '2px solid #f44336'
+          }}>
+            <div style={{ fontSize: '60px', marginBottom: '20px' }}>❌</div>
+            <p style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: 'bold' }}>Error al cargar la imagen</p>
+            <p style={{ margin: 0, color: '#aaa', fontSize: '14px', wordBreak: 'break-all' }}>
+              URL: {urlCompleta}
+            </p>
+            <button
+              onClick={cerrar}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                backgroundColor: '#ff9800',
+                color: '#000',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              Cerrar
+            </button>
+          </div>
+        ) : (
+          <img
+            src={urlCompleta}
+            alt="Comprobante de pago"
+            onLoad={() => {
+              setCargando(false);
+              console.log('✅ Imagen cargada correctamente');
+            }}
+            onError={(e) => {
+              setCargando(false);
+              setError(true);
+              console.error('❌ Error al cargar imagen:', urlCompleta);
+              console.error('❌ Error del evento:', e);
+            }}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '80vh',
+              borderRadius: '10px',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+              display: error || cargando ? 'none' : 'block'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
       </div>
     </div>
   );

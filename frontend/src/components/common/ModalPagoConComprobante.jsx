@@ -4,6 +4,14 @@ function ModalPagoConComprobante({ cerrar, onEnviarSolicitud, monto = 29 }) {
   const [metodoPago, setMetodoPago] = useState('qr'); // 'qr' o 'tarjeta'
   const [cargando, setCargando] = useState(false);
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
+  
+  // Estados para datos de tarjeta
+  const [datosTarjeta, setDatosTarjeta] = useState({
+    numero: '',
+    nombre: '',
+    vencimiento: '',
+    cvv: ''
+  });
 
   const seleccionarArchivo = (e) => {
     const archivo = e.target.files[0];
@@ -25,10 +33,35 @@ function ModalPagoConComprobante({ cerrar, onEnviarSolicitud, monto = 29 }) {
     setArchivoSeleccionado(archivo);
   };
 
+  const formatearNumeroTarjeta = (valor) => {
+    const numeros = valor.replace(/\s/g, '');
+    const grupos = numeros.match(/.{1,4}/g);
+    return grupos ? grupos.join(' ') : numeros;
+  };
+
   const procesarPago = async () => {
+    // Validar comprobante
     if (!archivoSeleccionado) {
       alert('❌ Debes subir un comprobante de pago');
       return;
+    }
+
+    // Validar datos de tarjeta si es necesario
+    if (metodoPago === 'tarjeta') {
+      if (!datosTarjeta.numero || !datosTarjeta.nombre || !datosTarjeta.vencimiento || !datosTarjeta.cvv) {
+        alert('❌ Por favor completa todos los datos de la tarjeta');
+        return;
+      }
+
+      if (datosTarjeta.numero.replace(/\s/g, '').length !== 16) {
+        alert('❌ El número de tarjeta debe tener 16 dígitos');
+        return;
+      }
+
+      if (datosTarjeta.cvv.length !== 3) {
+        alert('❌ El CVV debe tener 3 dígitos');
+        return;
+      }
     }
 
     setCargando(true);
@@ -56,7 +89,8 @@ function ModalPagoConComprobante({ cerrar, onEnviarSolicitud, monto = 29 }) {
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 2000,
-      padding: '20px'
+      padding: '20px',
+      overflowY: 'auto'
     }}>
       <div style={{
         backgroundColor: '#2d2d2d',
@@ -197,27 +231,141 @@ function ModalPagoConComprobante({ cerrar, onEnviarSolicitud, monto = 29 }) {
               </p>
             </div>
           ) : (
-            <div style={{
-              padding: '30px',
-              backgroundColor: '#1a1a1a',
-              borderRadius: '10px',
-              textAlign: 'center',
-              marginBottom: '25px'
-            }}>
-              <h3 style={{ color: '#ff9800', marginBottom: '15px' }}>
-                💳 Pago con Tarjeta
+            <div style={{ marginBottom: '25px' }}>
+              <h3 style={{ color: '#ff9800', marginBottom: '20px' }}>
+                Datos de la Tarjeta
               </h3>
-              <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>
-                Realiza el pago con tu tarjeta de crédito/débito y sube el comprobante.
-              </p>
+
+              <div style={{ display: 'grid', gap: '15px' }}>
+                {/* Número de tarjeta */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>
+                    Número de Tarjeta *
+                  </label>
+                  <input
+                    type="text"
+                    value={datosTarjeta.numero}
+                    onChange={(e) => {
+                      const valor = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                      if (valor.length <= 16) {
+                        setDatosTarjeta({ ...datosTarjeta, numero: formatearNumeroTarjeta(valor) });
+                      }
+                    }}
+                    placeholder="1234 5678 9012 3456"
+                    disabled={cargando}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '2px solid #444',
+                      backgroundColor: '#1a1a1a',
+                      color: '#fff',
+                      fontSize: '16px',
+                      fontFamily: 'monospace',
+                      letterSpacing: '2px'
+                    }}
+                  />
+                </div>
+
+                {/* Nombre */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>
+                    Nombre en la Tarjeta *
+                  </label>
+                  <input
+                    type="text"
+                    value={datosTarjeta.nombre}
+                    onChange={(e) => setDatosTarjeta({ ...datosTarjeta, nombre: e.target.value.toUpperCase() })}
+                    placeholder="JUAN PEREZ"
+                    disabled={cargando}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: '2px solid #444',
+                      backgroundColor: '#1a1a1a',
+                      color: '#fff',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+
+                {/* Vencimiento y CVV */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>
+                      Vencimiento (MM/AA) *
+                    </label>
+                    <input
+                      type="text"
+                      value={datosTarjeta.vencimiento}
+                      onChange={(e) => {
+                        let valor = e.target.value.replace(/\D/g, '');
+                        if (valor.length >= 2) {
+                          valor = valor.slice(0, 2) + '/' + valor.slice(2, 4);
+                        }
+                        if (valor.length <= 5) {
+                          setDatosTarjeta({ ...datosTarjeta, vencimiento: valor });
+                        }
+                      }}
+                      placeholder="MM/AA"
+                      disabled={cargando}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '2px solid #444',
+                        backgroundColor: '#1a1a1a',
+                        color: '#fff',
+                        fontSize: '16px',
+                        fontFamily: 'monospace',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>
+                      CVV *
+                    </label>
+                    <input
+                      type="password"
+                      value={datosTarjeta.cvv}
+                      onChange={(e) => {
+                        const valor = e.target.value.replace(/\D/g, '');
+                        if (valor.length <= 3) {
+                          setDatosTarjeta({ ...datosTarjeta, cvv: valor });
+                        }
+                      }}
+                      placeholder="123"
+                      maxLength="3"
+                      disabled={cargando}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '2px solid #444',
+                        backgroundColor: '#1a1a1a',
+                        color: '#fff',
+                        fontSize: '16px',
+                        fontFamily: 'monospace',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Info de seguridad */}
               <div style={{
-                backgroundColor: '#2d2d2d',
-                padding: '15px',
+                marginTop: '20px',
+                padding: '12px',
+                backgroundColor: '#1a1a1a',
                 borderRadius: '8px',
-                marginTop: '15px'
+                border: '1px solid #444'
               }}>
-                <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>
-                  Monto a pagar: <strong style={{ color: '#ff9800', fontSize: '18px' }}>$ {monto}</strong>
+                <p style={{ margin: 0, color: '#aaa', fontSize: '12px', lineHeight: '1.6' }}>
+                  🔒 Tu información está segura. Usamos encriptación SSL para proteger tus datos.
                 </p>
               </div>
             </div>

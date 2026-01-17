@@ -71,13 +71,23 @@ class PlanSerializer(serializers.ModelSerializer):
 class SolicitudUpgradeSerializer(serializers.ModelSerializer):
     microempresa_nombre = serializers.CharField(source='microempresa.nombre', read_only=True)
     microempresa_email = serializers.CharField(source='microempresa.email', read_only=True)
-    metodo_pago_display = serializers.CharField(source='get_metodo_pago_display', read_only=True)  # NUEVO
+    metodo_pago_display = serializers.CharField(source='get_metodo_pago_display', read_only=True)
+    comprobante_url = serializers.SerializerMethodField()  # NUEVO
     
     class Meta:
         model = SolicitudUpgrade
         fields = [
             'id', 'microempresa', 'microempresa_nombre', 'microempresa_email',
-            'comprobante', 'metodo_pago', 'metodo_pago_display', 'estado',  # AGREGADO metodo_pago
-            'fecha_solicitud', 'fecha_revision', 'comentario_admin', 'monto'
+            'comprobante', 'comprobante_url', 'metodo_pago', 'metodo_pago_display',  # AGREGADO comprobante_url
+            'estado', 'fecha_solicitud', 'fecha_revision', 'comentario_admin', 'monto'
         ]
         read_only_fields = ['fecha_solicitud', 'fecha_revision']
+    
+    def get_comprobante_url(self, obj):
+        """Devolver URL completa del comprobante"""
+        if obj.comprobante:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.comprobante.url)
+            return obj.comprobante.url
+        return None
