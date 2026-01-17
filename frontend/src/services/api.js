@@ -1047,4 +1047,17 @@ export const api = {
       return { success: false, message: 'Error de conexión' };
     }
   },
+  // ==================== CLIENTES - BÚSQUEDA GLOBAL (ADMIN) ====================
+
+  // Obtener TODOS los clientes del sistema (sin filtro de microempresa)
+  getAllClientesGlobal: async () => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/`);
+      const result = await response.json();
+      return { success: true, data: result };
+    } catch (error) {
+      console.error('Error al obtener todos los clientes:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
 };
