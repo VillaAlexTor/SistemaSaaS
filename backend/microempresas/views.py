@@ -1,3 +1,5 @@
+# backend/microempresas/views.py
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from .models import Microempresa, Cliente, Proveedor, Compra, Venta, Plan, SolicitudUpgrade
@@ -9,12 +11,12 @@ from rest_framework.decorators import action
 from django.contrib.auth.hashers import check_password, make_password
 from sistema_ventas_api.utils import verify_recaptcha
 from django.utils import timezone
+
 class MicroempresaViewSet(viewsets.ModelViewSet):
     queryset = Microempresa.objects.all()
     serializer_class = MicroempresaSerializer
     
     def create(self, request, *args, **kwargs):
-        # Verificar el captcha ANTES de crear la microempresa
         recaptcha_response = request.data.get('recaptcha_token')
         
         if not recaptcha_response:
@@ -29,13 +31,10 @@ class MicroempresaViewSet(viewsets.ModelViewSet):
                 'message': 'CAPTCHA inválido. Por favor inténtalo de nuevo.'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Si el captcha es válido, continuar con el registro normal
         return super().create(request, *args, **kwargs)
+    
     @action(detail=True, methods=['post'])
     def cambiar_password(self, request, pk=None):
-        """
-        Endpoint para cambiar la contraseña de una microempresa
-        """
         microempresa = self.get_object()
         password_actual = request.data.get('password_actual')
         nueva_password = request.data.get('nueva_password')
@@ -46,14 +45,12 @@ class MicroempresaViewSet(viewsets.ModelViewSet):
                 'message': 'Se requiere la contraseña actual y la nueva'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Verificar que la contraseña actual sea correcta
         if not check_password(password_actual, microempresa.password):
             return Response({
                 'success': False,
                 'message': 'La contraseña actual es incorrecta'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Actualizar la contraseña
         microempresa.password = make_password(nueva_password)
         microempresa.save()
         
@@ -61,6 +58,7 @@ class MicroempresaViewSet(viewsets.ModelViewSet):
             'success': True,
             'message': 'Contraseña actualizada correctamente'
         })
+
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
@@ -107,10 +105,18 @@ class ClienteViewSet(viewsets.ModelViewSet):
             'message': 'Empleado enviado a la papelera'
         })
     
+    # 🔥 AQUÍ ESTÁ EL FIX - NO USAR get_object()
     @action(detail=True, methods=['post'])
     def restaurar(self, request, pk=None):
         """Restaurar de la papelera"""
-        cliente = self.get_object()
+        try:
+            # ✅ ACCEDER DIRECTAMENTE SIN FILTROS
+            cliente = Cliente.objects.get(pk=pk)
+        except Cliente.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Cliente no encontrado'
+            }, status=status.HTTP_404_NOT_FOUND)
         
         if not cliente.eliminado:
             return Response({
@@ -131,7 +137,14 @@ class ClienteViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['delete'])
     def eliminar_permanente(self, request, pk=None):
         """Eliminar permanentemente de la base de datos"""
-        cliente = self.get_object()
+        try:
+            # ✅ ACCEDER DIRECTAMENTE SIN FILTROS
+            cliente = Cliente.objects.get(pk=pk)
+        except Cliente.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Cliente no encontrado'
+            }, status=status.HTTP_404_NOT_FOUND)
         
         if not cliente.eliminado:
             return Response({
@@ -159,14 +172,12 @@ class ClienteViewSet(viewsets.ModelViewSet):
                 'message': 'Se requiere la contraseña actual y la nueva'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Verificar que la contraseña actual sea correcta
         if not check_password(password_actual, cliente.password):
             return Response({
                 'success': False,
                 'message': 'La contraseña actual es incorrecta'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Actualizar la contraseña
         cliente.password = make_password(nueva_password)
         cliente.save()
         
@@ -212,9 +223,6 @@ class PlanViewSet(viewsets.ModelViewSet):
     queryset = Plan.objects.filter(activo=True)
     serializer_class = PlanSerializer
 
-from rest_framework.decorators import action
-from django.utils import timezone
-
 class SolicitudUpgradeViewSet(viewsets.ModelViewSet):
     queryset = SolicitudUpgrade.objects.all()
     serializer_class = SolicitudUpgradeSerializer
@@ -227,14 +235,12 @@ class SolicitudUpgradeViewSet(viewsets.ModelViewSet):
         return queryset
     
     def get_serializer_context(self):
-        """Pasar el contexto de la request al serializer"""
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
     
     @action(detail=True, methods=['post'])
     def aprobar(self, request, pk=None):
-        """Aprobar una solicitud y cambiar el plan a Premium"""
         solicitud = self.get_object()
         
         if solicitud.estado != 'pendiente':
@@ -243,11 +249,9 @@ class SolicitudUpgradeViewSet(viewsets.ModelViewSet):
                 'message': 'Esta solicitud ya fue procesada'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Cambiar el plan de la microempresa a Premium
         solicitud.microempresa.plan = 'premium'
         solicitud.microempresa.save()
         
-        # Actualizar la solicitud
         solicitud.estado = 'aprobado'
         solicitud.fecha_revision = timezone.now()
         solicitud.comentario_admin = request.data.get('comentario', 'Solicitud aprobada')
@@ -260,7 +264,6 @@ class SolicitudUpgradeViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def rechazar(self, request, pk=None):
-        """Rechazar una solicitud"""
         solicitud = self.get_object()
         
         if solicitud.estado != 'pendiente':
@@ -269,7 +272,6 @@ class SolicitudUpgradeViewSet(viewsets.ModelViewSet):
                 'message': 'Esta solicitud ya fue procesada'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Actualizar la solicitud
         solicitud.estado = 'rechazado'
         solicitud.fecha_revision = timezone.now()
         solicitud.comentario_admin = request.data.get('comentario', 'Solicitud rechazada')

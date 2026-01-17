@@ -8,6 +8,7 @@ function VistaEmpleados({ microempresaId }) {
   const [vistaActual, setVistaActual] = useState('activos');
   const [modalNuevo, setModalNuevo] = useState(false);
   const [modalEditar, setModalEditar] = useState(null);
+  const [busquedaEmpleado, setBusquedaEmpleado] = useState(''); // ✅ NUEVO
 
   useEffect(() => {
     cargarEmpleados();
@@ -30,6 +31,21 @@ function VistaEmpleados({ microempresaId }) {
     
     setCargando(false);
   };
+
+  // ✅ FILTROS DE BÚSQUEDA
+  const empleadosFiltrados = empleados.filter(emp =>
+    (emp.nombre?.toLowerCase().includes(busquedaEmpleado.toLowerCase())) ||
+    (emp.apellido?.toLowerCase().includes(busquedaEmpleado.toLowerCase())) ||
+    (emp.email?.toLowerCase().includes(busquedaEmpleado.toLowerCase())) ||
+    (emp.ci_nit?.toLowerCase().includes(busquedaEmpleado.toLowerCase()))
+  );
+
+  const empleadosEliminadosFiltrados = empleadosEliminados.filter(emp =>
+    (emp.nombre?.toLowerCase().includes(busquedaEmpleado.toLowerCase())) ||
+    (emp.apellido?.toLowerCase().includes(busquedaEmpleado.toLowerCase())) ||
+    (emp.email?.toLowerCase().includes(busquedaEmpleado.toLowerCase())) ||
+    (emp.ci_nit?.toLowerCase().includes(busquedaEmpleado.toLowerCase()))
+  );
 
   const eliminarEmpleado = async (id) => {
     if (!window.confirm('¿Enviar este empleado a la papelera?')) return;
@@ -112,7 +128,7 @@ function VistaEmpleados({ microempresaId }) {
             fontWeight: 'bold'
           }}
         >
-          👥 Empleados Activos ({empleados.length})
+          👥 Empleados Activos ({empleadosFiltrados.length} de {empleados.length})
         </button>
         <button
           onClick={() => setVistaActual('papelera')}
@@ -126,19 +142,45 @@ function VistaEmpleados({ microempresaId }) {
             fontWeight: 'bold'
           }}
         >
-          🗑️ Papelera ({empleadosEliminados.length})
+          🗑️ Papelera ({empleadosEliminadosFiltrados.length} de {empleadosEliminados.length})
         </button>
       </div>
 
+      {/* ✅ BUSCADOR */}
+      {((vistaActual === 'activos' && empleados.length > 0) || 
+        (vistaActual === 'papelera' && empleadosEliminados.length > 0)) && (
+        <div style={{ marginBottom: '20px' }}>
+          <input
+            type="text"
+            placeholder="🔍 Buscar empleado por nombre, email o CI/NIT..."
+            value={busquedaEmpleado}
+            onChange={(e) => setBusquedaEmpleado(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              border: '2px solid #3d3d3d',
+              backgroundColor: '#1a1a1a',
+              color: '#fff',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+      )}
+
       {vistaActual === 'activos' ? (
         <TablaEmpleados 
-          empleados={empleados} 
+          empleados={empleadosFiltrados}
+          busqueda={busquedaEmpleado}
+          totalEmpleados={empleados.length}
           onEditar={setModalEditar}
           onEliminar={eliminarEmpleado}
         />
       ) : (
         <TablaPapelera 
-          empleados={empleadosEliminados}
+          empleados={empleadosEliminadosFiltrados}
+          busqueda={busquedaEmpleado}
+          totalEmpleados={empleadosEliminados.length}
           onRestaurar={restaurarEmpleado}
           onEliminarPermanente={eliminarPermanente}
         />
@@ -167,8 +209,8 @@ function VistaEmpleados({ microempresaId }) {
 // TABLA DE EMPLEADOS ACTIVOS
 // ============================================
 
-function TablaEmpleados({ empleados, onEditar, onEliminar }) {
-  if (empleados.length === 0) {
+function TablaEmpleados({ empleados, busqueda, totalEmpleados, onEditar, onEliminar }) {
+  if (totalEmpleados === 0) {
     return (
       <div style={{
         backgroundColor: '#2d2d2d',
@@ -180,6 +222,23 @@ function TablaEmpleados({ empleados, onEditar, onEliminar }) {
         <div style={{ fontSize: '80px', marginBottom: '20px', opacity: 0.3 }}>👥</div>
         <p style={{ color: '#aaa', fontSize: '18px', margin: 0 }}>
           No hay empleados registrados
+        </p>
+      </div>
+    );
+  }
+
+  if (empleados.length === 0 && busqueda) {
+    return (
+      <div style={{
+        backgroundColor: '#2d2d2d',
+        borderRadius: '10px',
+        padding: '60px',
+        textAlign: 'center',
+        border: '1px solid #3d3d3d'
+      }}>
+        <div style={{ fontSize: '80px', marginBottom: '20px', opacity: 0.3 }}>🔍</div>
+        <p style={{ color: '#aaa', fontSize: '18px', margin: 0 }}>
+          No se encontraron empleados con "{busqueda}"
         </p>
       </div>
     );
@@ -270,8 +329,8 @@ function TablaEmpleados({ empleados, onEditar, onEliminar }) {
 // TABLA DE PAPELERA
 // ============================================
 
-function TablaPapelera({ empleados, onRestaurar, onEliminarPermanente }) {
-  if (empleados.length === 0) {
+function TablaPapelera({ empleados, busqueda, totalEmpleados, onRestaurar, onEliminarPermanente }) {
+  if (totalEmpleados === 0) {
     return (
       <div style={{
         backgroundColor: '#2d2d2d',
@@ -283,6 +342,23 @@ function TablaPapelera({ empleados, onRestaurar, onEliminarPermanente }) {
         <div style={{ fontSize: '80px', marginBottom: '20px', opacity: 0.3 }}>✅</div>
         <p style={{ color: '#aaa', fontSize: '18px', margin: 0 }}>
           La papelera está vacía
+        </p>
+      </div>
+    );
+  }
+
+  if (empleados.length === 0 && busqueda) {
+    return (
+      <div style={{
+        backgroundColor: '#2d2d2d',
+        borderRadius: '10px',
+        padding: '60px',
+        textAlign: 'center',
+        border: '1px solid #3d3d3d'
+      }}>
+        <div style={{ fontSize: '80px', marginBottom: '20px', opacity: 0.3 }}>🔍</div>
+        <p style={{ color: '#aaa', fontSize: '18px', margin: 0 }}>
+          No se encontraron empleados eliminados con "{busqueda}"
         </p>
       </div>
     );
@@ -781,7 +857,6 @@ function ModalEditarEmpleado({ empleado, cerrar, onExito }) {
               />
             </div>
           </div>
-
           <div style={{ marginBottom: '15px' }}>
             <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight:
             // CONTINUACIÓN DE ModalEditarEmpleado (agregar después de la línea 'fontWeight:')

@@ -830,6 +830,7 @@ export const api = {
     }
   },
   // ==================== GESTIÓN DE EMPLEADOS/VENDEDORES ====================
+
   // Obtener empleados de una microempresa
   getEmpleados: async (microempresaId, incluirEliminados = false) => {
     try {
@@ -889,14 +890,22 @@ export const api = {
     }
   },
 
-  // Soft delete (enviar a papelera) - ✅ CORREGIDO
+  // 🔧 SOFT DELETE - PROBANDO AMBAS RUTAS
   softDeleteEmpleado: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/clientes/${id}/soft_delete/`, {
+      // Intenta primero con guión
+      let response = await fetch(`${API_URL}/clientes/${id}/soft-delete/`, {
         method: 'DELETE'
       });
       
-      // ✅ FIX: Verificar si la respuesta es exitosa antes de parsear
+      // Si falla, intenta con guión bajo
+      if (!response.ok) {
+        console.log('⚠️ Intentando con soft_delete...');
+        response = await fetch(`${API_URL}/clientes/${id}/soft_delete/`, {
+          method: 'DELETE'
+        });
+      }
+      
       if (response.ok) {
         const result = await response.json();
         return result;
@@ -913,38 +922,76 @@ export const api = {
     }
   },
 
-  // Restaurar de papelera - ✅ CORREGIDO
+  // 🔧 RESTAURAR - PROBANDO TODAS LAS VARIANTES POSIBLES
   restaurarEmpleado: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/clientes/${id}/restaurar/`, {
+      console.log('🔍 Intentando restaurar empleado ID:', id);
+      
+      // INTENTO 1: /restaurar/ (con url_path)
+      let response = await fetch(`${API_URL}/clientes/${id}/restaurar/`, {
         method: 'POST'
       });
       
-      // ✅ FIX: Verificar si la respuesta es exitosa antes de parsear
+      console.log('📡 Intento 1 - /restaurar/ - Status:', response.status);
+      
+      // INTENTO 2: Sin trailing slash
+      if (!response.ok) {
+        console.log('⚠️ Intentando sin trailing slash...');
+        response = await fetch(`${API_URL}/clientes/${id}/restaurar`, {
+          method: 'POST'
+        });
+        console.log('📡 Intento 2 - /restaurar - Status:', response.status);
+      }
+      
+      // INTENTO 3: Con PATCH en lugar de POST
+      if (!response.ok) {
+        console.log('⚠️ Intentando con PATCH...');
+        response = await fetch(`${API_URL}/clientes/${id}/`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            eliminado: false, 
+            activo: true,
+            fecha_eliminacion: null 
+          })
+        });
+        console.log('📡 Intento 3 - PATCH directo - Status:', response.status);
+      }
+      
       if (response.ok) {
         const result = await response.json();
+        console.log('✅ Restauración exitosa:', result);
         return result;
       } else {
         const errorData = await response.json();
+        console.error('❌ Error en restauración:', errorData);
         return { 
           success: false, 
           message: errorData.message || 'Error al restaurar empleado' 
         };
       }
     } catch (error) {
-      console.error('Error en restaurarEmpleado:', error);
+      console.error('❌ Error en restaurarEmpleado:', error);
       return { success: false, message: 'Error de conexión' };
     }
   },
 
-  // Eliminar permanentemente - ✅ CORREGIDO
+  // 🔧 ELIMINAR PERMANENTE - PROBANDO AMBAS RUTAS
   eliminarEmpleadoPermanente: async (id) => {
     try {
-      const response = await fetch(`${API_URL}/clientes/${id}/eliminar_permanente/`, {
+      // Intenta primero con guión
+      let response = await fetch(`${API_URL}/clientes/${id}/eliminar-permanente/`, {
         method: 'DELETE'
       });
       
-      // ✅ FIX: Verificar si la respuesta es exitosa antes de parsear
+      // Si falla, intenta con guión bajo
+      if (!response.ok) {
+        console.log('⚠️ Intentando con eliminar_permanente...');
+        response = await fetch(`${API_URL}/clientes/${id}/eliminar_permanente/`, {
+          method: 'DELETE'
+        });
+      }
+      
       if (response.ok) {
         const result = await response.json();
         return result;
@@ -964,7 +1011,8 @@ export const api = {
   // Cambiar contraseña de empleado
   cambiarPasswordEmpleado: async (id, passwordActual, nuevaPassword) => {
     try {
-      const response = await fetch(`${API_URL}/clientes/${id}/cambiar_password/`, {
+      // Intenta primero con guión
+      let response = await fetch(`${API_URL}/clientes/${id}/cambiar-password/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -972,6 +1020,19 @@ export const api = {
           nueva_password: nuevaPassword
         })
       });
+      
+      // Si falla, intenta con guión bajo
+      if (!response.ok) {
+        console.log('⚠️ Intentando con cambiar_password...');
+        response = await fetch(`${API_URL}/clientes/${id}/cambiar_password/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            password_actual: passwordActual,
+            nueva_password: nuevaPassword
+          })
+        });
+      }
       
       const result = await response.json();
       return result;

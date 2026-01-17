@@ -8,6 +8,7 @@ function VistaEmpleadosPorEmpresa() {
   const [cargando, setCargando] = useState(true);
   const [cargandoEmpleados, setCargandoEmpleados] = useState(false);
   const [busqueda, setBusqueda] = useState('');
+  const [busquedaEmpleado, setBusquedaEmpleado] = useState(''); // ✅ NUEVO
 
   useEffect(() => {
     cargarMicroempresas();
@@ -46,6 +47,14 @@ function VistaEmpleadosPorEmpresa() {
     (m.nombre?.toLowerCase().includes(busqueda.toLowerCase())) ||
     (m.email?.toLowerCase().includes(busqueda.toLowerCase())) ||
     (m.rubro?.toLowerCase().includes(busqueda.toLowerCase()))
+  );
+
+  // ✅ FILTRO DE EMPLEADOS
+  const empleadosFiltrados = empleados.filter(emp =>
+    (emp.nombre?.toLowerCase().includes(busquedaEmpleado.toLowerCase())) ||
+    (emp.apellido?.toLowerCase().includes(busquedaEmpleado.toLowerCase())) ||
+    (emp.email?.toLowerCase().includes(busquedaEmpleado.toLowerCase())) ||
+    (emp.ci_nit?.toLowerCase().includes(busquedaEmpleado.toLowerCase()))
   );
 
   if (cargando) {
@@ -211,19 +220,45 @@ function VistaEmpleadosPorEmpresa() {
               padding: '20px',
               border: '1px solid #3d3d3d'
             }}>
-              <h3 style={{ 
-                margin: '0 0 20px 0', 
-                color: '#ff9800', 
-                borderBottom: '2px solid #ff9800', 
-                paddingBottom: '10px' 
-              }}>
-                👥 Empleados ({empleados.length})
-              </h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ 
+                  margin: 0, 
+                  color: '#ff9800'
+                }}>
+                  👥 Empleados ({empleadosFiltrados.length} de {empleados.length})
+                </h3>
+              </div>
+
+              {/* ✅ BUSCADOR DE EMPLEADOS */}
+              {empleados.length > 0 && (
+                <div style={{ marginBottom: '20px' }}>
+                  <input
+                    type="text"
+                    placeholder="🔍 Buscar empleado por nombre, email o CI/NIT..."
+                    value={busquedaEmpleado}
+                    onChange={(e) => setBusquedaEmpleado(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px 20px',
+                      borderRadius: '8px',
+                      border: '2px solid #444',
+                      backgroundColor: '#1a1a1a',
+                      color: '#fff',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+              )}
 
               {empleados.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px' }}>
                   <div style={{ fontSize: '60px', marginBottom: '15px', opacity: 0.5 }}>👥</div>
                   <p style={{ color: '#aaa', margin: 0 }}>Esta empresa no tiene empleados registrados</p>
+                </div>
+              ) : empleadosFiltrados.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <div style={{ fontSize: '60px', marginBottom: '15px', opacity: 0.5 }}>🔍</div>
+                  <p style={{ color: '#aaa', margin: 0 }}>No se encontraron empleados con "{busquedaEmpleado}"</p>
                 </div>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -239,7 +274,7 @@ function VistaEmpleadosPorEmpresa() {
                     </tr>
                   </thead>
                   <tbody>
-                    {empleados.map(emp => (
+                    {empleadosFiltrados.map(emp => (
                       <tr key={emp.id} style={{ borderBottom: '1px solid #3d3d3d' }}>
                         <td style={{ padding: '12px', color: '#aaa', fontSize: '13px' }}>#{emp.id}</td>
                         <td style={{ padding: '12px', color: '#fff', fontSize: '14px' }}>
