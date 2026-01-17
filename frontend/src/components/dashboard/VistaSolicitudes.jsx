@@ -66,7 +66,7 @@ function VistaSolicitudes({ actualizarDatos }) {
               <TarjetaSolicitud
                 key={solicitud.id}
                 solicitud={solicitud}
-                onVerImagen={() => setModalImagen(solicitud.comprobante)}
+                onVerImagen={() => setModalImagen(solicitud.comprobante_url)}
                 onAprobar={() => setModalAccion({ tipo: 'aprobar', solicitud })}
                 onRechazar={() => setModalAccion({ tipo: 'rechazar', solicitud })}
               />
@@ -124,7 +124,7 @@ function VistaSolicitudes({ actualizarDatos }) {
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       <button
-                        onClick={() => setModalImagen(s.comprobante_url || s.comprobante)}
+                        onClick={() => setModalImagen(s.comprobante_url)}
                         style={{
                           padding: '6px 12px',
                           backgroundColor: '#9c27b0',
@@ -150,7 +150,7 @@ function VistaSolicitudes({ actualizarDatos }) {
       {/* Modal de Imagen */}
       {modalImagen && (
         <ModalImagen
-          url={`http://127.0.0.1:8000${modalImagen}`}
+          url={modalImagen}
           cerrar={() => setModalImagen(null)}
         />
       )}
@@ -324,15 +324,7 @@ function ModalImagen({ url, cerrar }) {
   const [error, setError] = useState(false);
   const [cargando, setCargando] = useState(true);
 
-  // Limpiar URL: si ya tiene el dominio, no agregarlo de nuevo
-  const urlCompleta = url.startsWith('http://127.0.0.1:8000') 
-    ? url 
-    : url.startsWith('/media') 
-      ? `http://127.0.0.1:8000${url}` 
-      : url;
-
-  console.log('🖼️ URL original:', url);
-  console.log('🖼️ URL completa:', urlCompleta);
+  console.log('🖼️ URL recibida:', url);
 
   return (
     <div style={{
@@ -401,7 +393,7 @@ function ModalImagen({ url, cerrar }) {
             <div style={{ fontSize: '60px', marginBottom: '20px' }}>❌</div>
             <p style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: 'bold' }}>Error al cargar la imagen</p>
             <p style={{ margin: 0, color: '#aaa', fontSize: '14px', wordBreak: 'break-all' }}>
-              URL: {urlCompleta}
+              URL: {url}
             </p>
             <button
               onClick={cerrar}
@@ -421,7 +413,7 @@ function ModalImagen({ url, cerrar }) {
           </div>
         ) : (
           <img
-            src={urlCompleta}
+            src={url}
             alt="Comprobante de pago"
             onLoad={() => {
               setCargando(false);
@@ -430,7 +422,7 @@ function ModalImagen({ url, cerrar }) {
             onError={(e) => {
               setCargando(false);
               setError(true);
-              console.error('❌ Error al cargar imagen:', urlCompleta);
+              console.error('❌ Error al cargar imagen:', url);
               console.error('❌ Error del evento:', e);
             }}
             style={{

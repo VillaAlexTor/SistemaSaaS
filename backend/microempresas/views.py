@@ -123,6 +123,12 @@ class SolicitudUpgradeViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(microempresa_id=microempresa_id)
         return queryset
     
+    def get_serializer_context(self):
+        """Pasar el contexto de la request al serializer"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
     @action(detail=True, methods=['post'])
     def aprobar(self, request, pk=None):
         """Aprobar una solicitud y cambiar el plan a Premium"""
