@@ -36,10 +36,13 @@ function VistaEmpleadosPorEmpresa() {
 
   const cargarEmpleados = async (microempresaId) => {
     setCargandoEmpleados(true);
-    const resultado = await api.getEmpleados(microempresaId, false);
+    // Cargar TODOS los clientes (vendedores y compradores) de la microempresa
+    const resultado = await api.getClientesMicroempresa(microempresaId);
     
     if (resultado.success) {
-      setEmpleados(resultado.data);
+      // Filtrar solo los que NO están eliminados
+      const clientesActivos = resultado.data.filter(c => !c.eliminado);
+      setEmpleados(clientesActivos);
     }
     
     setCargandoEmpleados(false);
