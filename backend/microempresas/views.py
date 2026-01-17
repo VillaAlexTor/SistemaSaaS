@@ -65,11 +65,13 @@ class ClienteViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = super().get_queryset()
+        # EXTRAE EL ID_TENANT 
         microempresa_id = self.request.query_params.get('microempresa', None)
         eliminados = self.request.query_params.get('eliminados', 'false')
         rol = self.request.query_params.get('rol', None)
         
         if microempresa_id:
+            # FILTRA POR ID_TENANT
             queryset = queryset.filter(microempresa_id=microempresa_id)
         
         # Filtrar por estado eliminado
@@ -105,12 +107,10 @@ class ClienteViewSet(viewsets.ModelViewSet):
             'message': 'Empleado enviado a la papelera'
         })
     
-    # 🔥 AQUÍ ESTÁ EL FIX - NO USAR get_object()
     @action(detail=True, methods=['post'])
     def restaurar(self, request, pk=None):
         """Restaurar de la papelera"""
         try:
-            # ✅ ACCEDER DIRECTAMENTE SIN FILTROS
             cliente = Cliente.objects.get(pk=pk)
         except Cliente.DoesNotExist:
             return Response({

@@ -4,7 +4,7 @@ import VistaEmpleados from './VistaEmpleados'; // ✅ IMPORTAR
 import { api } from '../../services/api';
 
 function DashboardMicroempresa({ usuario, cerrarSesion }) {
-  const [vistaActual, setVistaActual] = useState('inicio'); // ✅ NUEVO: Estado para manejar vistas
+  const [vistaActual, setVistaActual] = useState('inicio'); 
   const [cargando, setCargando] = useState(true);
   const [productos, setProductos] = useState([]);
   const [ventas, setVentas] = useState([]);
@@ -136,8 +136,8 @@ function DashboardMicroempresa({ usuario, cerrarSesion }) {
             { id: 'inicio', icono: '🏠', texto: 'Inicio' },
             { id: 'productos', icono: '📦', texto: 'Productos' },
             { id: 'ventas', icono: '💰', texto: 'Ventas' },
-            { id: 'empleados', icono: '👥', texto: 'Empleados' }, // ✅ NUEVO
-            { id: 'clientes', icono: '🛒', texto: 'Clientes' },
+            { id: 'empleados', icono: '👥', texto: 'Clientes' }, // ✅ NUEVO
+            { id: 'clientes', icono: '🛒', texto: 'Usuarios' },
             { id: 'reportes', icono: '📊', texto: 'Reportes' }
           ].map(item => (
             <button

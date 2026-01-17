@@ -96,7 +96,7 @@ function VistaEmpleados({ microempresaId }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <h2 style={{ color: '#2196f3', margin: 0, fontSize: '28px' }}>
-          👥 Gestión de Empleados
+          👥 Gestión de Clientes
         </h2>
         <button
           onClick={() => setModalNuevo(true)}
@@ -111,7 +111,7 @@ function VistaEmpleados({ microempresaId }) {
             boxShadow: '0 4px 15px rgba(76,175,80,0.3)'
           }}
         >
-          ➕ Nuevo Empleado
+          ➕ Nuevo Cliente
         </button>
       </div>
 
@@ -128,7 +128,7 @@ function VistaEmpleados({ microempresaId }) {
             fontWeight: 'bold'
           }}
         >
-          👥 Empleados Activos ({empleadosFiltrados.length} de {empleados.length})
+          👥 Clientes Activos ({empleadosFiltrados.length} de {empleados.length})
         </button>
         <button
           onClick={() => setVistaActual('papelera')}
@@ -462,11 +462,12 @@ function ModalNuevoEmpleado({ microempresaId, cerrar, onExito }) {
 
     const resultado = await api.createEmpleado({
       ...datos,
-      microempresa: microempresaId
+      // ADJUNTA EL ID_TENANT AL OBJETO
+      microempresa: microempresaId // ID_TENANT (FK)
     });
 
     if (resultado.success) {
-      alert('✅ Empleado creado exitosamente');
+      alert('✅ Cliente creado exitosamente');
       onExito();
       cerrar();
     } else {
@@ -509,7 +510,7 @@ function ModalNuevoEmpleado({ microempresaId, cerrar, onExito }) {
           alignItems: 'center'
         }}>
           <h3 style={{ margin: 0, color: '#2196f3', fontSize: '20px' }}>
-            ➕ Nuevo Empleado
+            ➕ Nuevo Cliente
           </h3>
           <button
             onClick={cerrar}
@@ -700,7 +701,7 @@ function ModalNuevoEmpleado({ microempresaId, cerrar, onExito }) {
               fontSize: '16px'
             }}
           >
-            {cargando ? '⏳ Creando...' : '✅ Crear Empleado'}
+            {cargando ? '⏳ Creando...' : '✅ Crear Cliente'}
           </button>
         </form>
       </div>

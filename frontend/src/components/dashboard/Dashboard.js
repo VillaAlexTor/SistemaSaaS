@@ -139,7 +139,7 @@ function Dashboard({ usuario, cerrarSesion }) {
             { id: 'inicio', icono: '🏠', texto: 'Inicio' },
             { id: 'microempresas', icono: '🏪', texto: 'Microempresas' },
             { id: 'usuarios', icono: '👥', texto: 'Usuarios' },
-            { id: 'empleados', icono: '👔', texto: 'Empleados' }, // ✅ NUEVO
+            { id: 'empleados', icono: '👔', texto: 'Clientes' }, 
             { id: 'reportes', icono: '📊', texto: 'Reportes' },
             { id: 'planes', icono: '💎', texto: 'Planes' },  
             { id: 'solicitudes', icono: '📋', texto: 'Solicitudes', badge: 0 },

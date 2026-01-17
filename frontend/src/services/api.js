@@ -847,7 +847,7 @@ export const api = {
     }
   },
 
-  // Crear empleado/vendedor
+  // Crear empleado/vendedor/cliente
   createEmpleado: async (datos) => {
     try {
       const response = await fetch(`${API_URL}/clientes/`, {
@@ -890,17 +890,14 @@ export const api = {
     }
   },
 
-  // 🔧 SOFT DELETE - PROBANDO AMBAS RUTAS
   softDeleteEmpleado: async (id) => {
     try {
-      // Intenta primero con guión
       let response = await fetch(`${API_URL}/clientes/${id}/soft-delete/`, {
         method: 'DELETE'
       });
       
-      // Si falla, intenta con guión bajo
       if (!response.ok) {
-        console.log('⚠️ Intentando con soft_delete...');
+        console.log('Intentando con soft_delete...');
         response = await fetch(`${API_URL}/clientes/${id}/soft_delete/`, {
           method: 'DELETE'
         });
@@ -922,7 +919,6 @@ export const api = {
     }
   },
 
-  // 🔧 RESTAURAR - PROBANDO TODAS LAS VARIANTES POSIBLES
   restaurarEmpleado: async (id) => {
     try {
       console.log('🔍 Intentando restaurar empleado ID:', id);

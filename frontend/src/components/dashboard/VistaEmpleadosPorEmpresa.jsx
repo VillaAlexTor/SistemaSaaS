@@ -69,7 +69,7 @@ function VistaEmpleadosPorEmpresa() {
   return (
     <div>
       <h2 style={{ color: '#ff9800', marginBottom: '30px', fontSize: '28px' }}>
-        👥 Empleados por Empresa
+        👥 Clientes por Empresa
       </h2>
 
       {!empresaSeleccionada ? (
@@ -334,7 +334,7 @@ function VistaEmpleadosPorEmpresa() {
                 border: '1px solid #3d3d3d',
                 textAlign: 'center'
               }}>
-                <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>Empleados Activos</p>
+                <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>Clientes Activos</p>
                 <p style={{ margin: '10px 0 0 0', color: '#4caf50', fontSize: '32px', fontWeight: 'bold' }}>
                   {empleados.filter(e => e.activo).length}
                 </p>

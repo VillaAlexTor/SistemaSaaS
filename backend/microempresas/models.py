@@ -44,7 +44,7 @@ class Cliente(models.Model):
         ('vendedor', 'Vendedor/Empleado'),
         ('comprador', 'Cliente Comprador'),
     ]
-    
+    # FOREIGN KEY = id_tenant Crea una columna
     microempresa = models.ForeignKey(Microempresa, on_delete=models.CASCADE, related_name='clientes')
     
     # Datos personales
@@ -55,7 +55,7 @@ class Cliente(models.Model):
     direccion = models.TextField(blank=True, null=True)
     
     # Login (solo para empleados/vendedores)
-    email = models.EmailField(unique=True, null=True, blank=True)  # ÚNICO GLOBALMENTE
+    email = models.EmailField(unique=True, null=True, blank=True)  
     password = models.CharField(max_length=255, null=True, blank=True)
     
     # Rol y permisos
