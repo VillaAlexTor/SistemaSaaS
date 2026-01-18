@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'microempresas',
     'usuarios',
     'productos',
-    'captcha',
+    'django_recaptcha',
 ]
 
 MIDDLEWARE = [
@@ -73,7 +73,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sistema_ventas',
         'USER': 'root',
-        'PASSWORD': '',  
+        'PASSWORD': 'Alexdavidtolajulian2004',  
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
