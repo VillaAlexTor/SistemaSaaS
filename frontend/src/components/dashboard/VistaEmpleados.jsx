@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 
-function VistaEmpleados({ microempresaId }) {
+function VistaEmpleados({ microempresaId, onActualizarContadores }) {
   const [empleados, setEmpleados] = useState([]);
   const [empleadosEliminados, setEmpleadosEliminados] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [vistaActual, setVistaActual] = useState('activos');
   const [modalNuevo, setModalNuevo] = useState(false);
   const [modalEditar, setModalEditar] = useState(null);
-  const [busquedaEmpleado, setBusquedaEmpleado] = useState(''); // ✅ NUEVO
+  const [busquedaEmpleado, setBusquedaEmpleado] = useState('');
 
   useEffect(() => {
     cargarEmpleados();
@@ -27,6 +27,19 @@ function VistaEmpleados({ microempresaId }) {
       if (resultado.success) {
         setEmpleadosEliminados(resultado.data);
       }
+    }
+    
+    // ✅ ACTUALIZAR CONTADORES EN EL DASHBOARD PRINCIPAL
+    if (onActualizarContadores) {
+      const [activos, eliminados] = await Promise.all([
+        api.getEmpleados(microempresaId, false),
+        api.getEmpleados(microempresaId, true)
+      ]);
+      
+      onActualizarContadores({
+        activos: activos.success ? activos.data.length : 0,
+        eliminados: eliminados.success ? eliminados.data.length : 0
+      });
     }
     
     setCargando(false);
@@ -53,7 +66,7 @@ function VistaEmpleados({ microempresaId }) {
     const resultado = await api.softDeleteEmpleado(id);
     if (resultado.success) {
       alert('✅ Empleado enviado a la papelera');
-      cargarEmpleados();
+      cargarEmpleados(); // ✅ Esto actualizará los contadores automáticamente
     } else {
       alert('❌ ' + resultado.message);
     }
@@ -65,7 +78,7 @@ function VistaEmpleados({ microempresaId }) {
     const resultado = await api.restaurarEmpleado(id);
     if (resultado.success) {
       alert('✅ Empleado restaurado');
-      cargarEmpleados();
+      cargarEmpleados(); // ✅ Esto actualizará los contadores automáticamente
     } else {
       alert('❌ ' + resultado.message);
     }
@@ -77,7 +90,7 @@ function VistaEmpleados({ microempresaId }) {
     const resultado = await api.eliminarEmpleadoPermanente(id);
     if (resultado.success) {
       alert('✅ Empleado eliminado permanentemente');
-      cargarEmpleados();
+      cargarEmpleados(); // ✅ Esto actualizará los contadores automáticamente
     } else {
       alert('❌ ' + resultado.message);
     }
@@ -85,9 +98,9 @@ function VistaEmpleados({ microempresaId }) {
 
   if (cargando) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px' }}>
+      <div style={{ textAlign: 'center', padding: '60px', backgroundColor: '#2d2d2d', borderRadius: '10px', border: '1px solid #3d3d3d' }}>
         <div style={{ fontSize: '60px', marginBottom: '20px' }}>⏳</div>
-        <p style={{ color: '#2196f3', fontSize: '18px' }}>Cargando empleados...</p>
+        <p style={{ color: '#2196f3', fontSize: '18px', margin: 0 }}>Cargando empleados...</p>
       </div>
     );
   }
@@ -115,17 +128,21 @@ function VistaEmpleados({ microempresaId }) {
         </button>
       </div>
 
+      {/* ✅ BOTONES CON BADGE (IDÉNTICO AL ADMIN) */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
         <button
           onClick={() => setVistaActual('activos')}
           style={{
-            padding: '12px 25px',
-            backgroundColor: vistaActual === 'activos' ? '#2196f3' : '#2d2d2d',
-            color: '#fff',
-            border: vistaActual === 'activos' ? '2px solid #2196f3' : '1px solid #3d3d3d',
-            borderRadius: '8px',
+            padding: '10px 20px',
+            backgroundColor: vistaActual === 'activos' ? '#2196f3' : 'transparent',
+            color: vistaActual === 'activos' ? '#000' : '#fff',
+            border: vistaActual === 'activos' ? 'none' : '1px solid #444',
+            borderRadius: '5px',
             cursor: 'pointer',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            fontSize: '14px',
+            transition: 'all 0.3s ease',
+            position: 'relative'
           }}
         >
           👥 Clientes Activos ({empleadosFiltrados.length} de {empleados.length})
@@ -133,16 +150,38 @@ function VistaEmpleados({ microempresaId }) {
         <button
           onClick={() => setVistaActual('papelera')}
           style={{
-            padding: '12px 25px',
-            backgroundColor: vistaActual === 'papelera' ? '#f44336' : '#2d2d2d',
-            color: '#fff',
-            border: vistaActual === 'papelera' ? '2px solid #f44336' : '1px solid #3d3d3d',
-            borderRadius: '8px',
+            padding: '10px 20px',
+            backgroundColor: vistaActual === 'papelera' ? '#f44336' : 'transparent',
+            color: vistaActual === 'papelera' ? '#fff' : '#fff',
+            border: vistaActual === 'papelera' ? 'none' : '1px solid #444',
+            borderRadius: '5px',
             cursor: 'pointer',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            fontSize: '14px',
+            transition: 'all 0.3s ease',
+            position: 'relative'
           }}
         >
-          🗑️ Papelera ({empleadosEliminadosFiltrados.length} de {empleadosEliminados.length})
+          🗑️ Papelera 
+          {empleadosEliminados.length > 0 && (
+            <span style={{
+              position: 'absolute',
+              top: '-8px',
+              right: '-8px',
+              backgroundColor: '#f44336',
+              color: '#fff',
+              borderRadius: '50%',
+              width: '22px',
+              height: '22px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+              fontWeight: 'bold'
+            }}>
+              {empleadosEliminados.length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -159,7 +198,7 @@ function VistaEmpleados({ microempresaId }) {
               width: '100%',
               padding: '12px 20px',
               borderRadius: '8px',
-              border: '2px solid #3d3d3d',
+              border: '2px solid #444',
               backgroundColor: '#1a1a1a',
               color: '#fff',
               fontSize: '14px'
@@ -249,6 +288,7 @@ function TablaEmpleados({ empleados, busqueda, totalEmpleados, onEditar, onElimi
       backgroundColor: '#2d2d2d',
       borderRadius: '10px',
       padding: '20px',
+      overflowX: 'auto',
       border: '1px solid #3d3d3d'
     }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -284,7 +324,7 @@ function TablaEmpleados({ empleados, busqueda, totalEmpleados, onEditar, onElimi
                 </span>
               </td>
               <td style={{ padding: '12px', textAlign: 'center' }}>
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
                     onClick={() => onEditar(emp)}
                     style={{
@@ -304,8 +344,8 @@ function TablaEmpleados({ empleados, busqueda, totalEmpleados, onEditar, onElimi
                     onClick={() => onEliminar(emp.id)}
                     style={{
                       padding: '6px 12px',
-                      backgroundColor: '#ff9800',
-                      color: '#000',
+                      backgroundColor: '#f44336',
+                      color: '#fff',
                       border: 'none',
                       borderRadius: '5px',
                       cursor: 'pointer',
@@ -369,6 +409,7 @@ function TablaPapelera({ empleados, busqueda, totalEmpleados, onRestaurar, onEli
       backgroundColor: '#2d2d2d',
       borderRadius: '10px',
       padding: '20px',
+      overflowX: 'auto',
       border: '2px solid #f44336'
     }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -382,7 +423,7 @@ function TablaPapelera({ empleados, busqueda, totalEmpleados, onRestaurar, onEli
         </thead>
         <tbody>
           {empleados.map(emp => (
-            <tr key={emp.id} style={{ borderBottom: '1px solid #3d3d3d' }}>
+            <tr key={emp.id} style={{ borderBottom: '1px solid #3d3d3d', opacity: 0.7 }}>
               <td style={{ padding: '12px', color: '#fff', fontSize: '14px' }}>
                 {emp.nombre} {emp.apellido}
               </td>
@@ -391,7 +432,7 @@ function TablaPapelera({ empleados, busqueda, totalEmpleados, onRestaurar, onEli
                 {new Date(emp.fecha_eliminacion).toLocaleDateString('es-BO')}
               </td>
               <td style={{ padding: '12px', textAlign: 'center' }}>
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
                     onClick={() => onRestaurar(emp.id)}
                     style={{
@@ -411,7 +452,7 @@ function TablaPapelera({ empleados, busqueda, totalEmpleados, onRestaurar, onEli
                     onClick={() => onEliminarPermanente(emp.id)}
                     style={{
                       padding: '6px 12px',
-                      backgroundColor: '#f44336',
+                      backgroundColor: '#d32f2f',
                       color: '#fff',
                       border: 'none',
                       borderRadius: '5px',
@@ -462,8 +503,7 @@ function ModalNuevoEmpleado({ microempresaId, cerrar, onExito }) {
 
     const resultado = await api.createEmpleado({
       ...datos,
-      // ADJUNTA EL ID_TENANT AL OBJETO
-      microempresa: microempresaId // ID_TENANT (FK)
+      microempresa: microempresaId
     });
 
     if (resultado.success) {
@@ -681,7 +721,8 @@ function ModalNuevoEmpleado({ microempresaId, cerrar, onExito }) {
                 border: '2px solid #3d3d3d',
                 backgroundColor: '#1a1a1a',
                 color: '#fff',
-                resize: 'vertical'
+                resize: 'vertical',
+                fontFamily: 'inherit'
               }}
             />
           </div>
@@ -858,11 +899,9 @@ function ModalEditarEmpleado({ empleado, cerrar, onExito }) {
               />
             </div>
           </div>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight:
-            // CONTINUACIÓN DE ModalEditarEmpleado (agregar después de la línea 'fontWeight:')
 
-              'bold' }}>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '5px', fontSize: '14px', fontWeight: 'bold' }}>
               Email *
             </label>
             <input
@@ -975,7 +1014,8 @@ function ModalEditarEmpleado({ empleado, cerrar, onExito }) {
                 border: '2px solid #3d3d3d',
                 backgroundColor: '#1a1a1a',
                 color: '#fff',
-                resize: 'vertical'
+                resize: 'vertical',
+                fontFamily: 'inherit'
               }}
             />
           </div>
